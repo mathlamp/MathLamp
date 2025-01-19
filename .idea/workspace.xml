@@ -4,9 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6a2c6cfc-73ce-40b0-9f92-4b4bf15beea3" name="Changes" comment="Add docs">
+    <list default="true" id="6a2c6cfc-73ce-40b0-9f92-4b4bf15beea3" name="Changes" comment="Improve docs main page">
+      <change afterPath="$PROJECT_DIR$/.readthedocs.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/index.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mkdocs.yml" beforeDir="false" afterPath="$PROJECT_DIR$/mkdocs.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -161,7 +163,15 @@
       <option name="project" value="LOCAL" />
       <updated>1737301448998</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Improve docs main page">
+      <option name="closed" value="true" />
+      <created>1737323022275</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1737323022275</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -178,7 +188,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="First working calculator prototype" />
     <MESSAGE value="Add docs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add docs" />
+    <MESSAGE value="Improve docs main page" />
+    <option name="LAST_COMMIT_MESSAGE" value="Improve docs main page" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
