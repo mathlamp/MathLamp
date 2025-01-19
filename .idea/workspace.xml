@@ -4,16 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6a2c6cfc-73ce-40b0-9f92-4b4bf15beea3" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/docs/img/favicon.ico" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/img/logo.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/index.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mkdocs.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="6a2c6cfc-73ce-40b0-9f92-4b4bf15beea3" name="Changes" comment="Add docs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/grammar.lark" beforeDir="false" afterPath="$PROJECT_DIR$/grammar.lark" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/index.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/index.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,7 +73,7 @@
       <recent name="C:\Users\rafae\PycharmProjects\MathLamp\tests" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.REPL">
+  <component name="RunManager" selected="Python tests.tests">
     <configuration name="REPL" type="PythonConfigurationType" factoryName="Python">
       <module name="MathLamp" />
       <option name="ENV_FILES" value="" />
@@ -160,7 +153,15 @@
       <option name="project" value="LOCAL" />
       <updated>1737205776554</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Add docs">
+      <option name="closed" value="true" />
+      <created>1737301448998</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1737301448998</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -176,7 +177,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="First working calculator prototype" />
-    <option name="LAST_COMMIT_MESSAGE" value="First working calculator prototype" />
+    <MESSAGE value="Add docs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add docs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
