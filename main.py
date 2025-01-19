@@ -11,13 +11,16 @@ grammar = f.read()
 f.close()
 
 console = Console()
+app = typer.Typer(pretty_exceptions_enable=False)
 
 @v_args(inline=True)    # Affects the signatures of the methods
 class CalculateTree(Transformer):
-    from operator import add, sub, mul, truediv as div, neg
+    from operator import add, sub, mul, truediv as div, neg, mod, pow
+    from math import sqrt
     number = float
 
     def __init__(self):
+        super().__init__()
         self.vars = {}
 
     def assign_var(self, name, value):
@@ -28,16 +31,16 @@ class CalculateTree(Transformer):
         try:
             return self.vars[name]
         except KeyError:
-            raise Exception("Variable not found: %s" % name)
+            raise Exception("ERROR: Variable not found: %s" % name)
 
-    def out(self, args):
-        print(args)
+    def out(self, value):
+        print(value)
 
 
 calc_parser = Lark(grammar, parser='lalr', transformer=CalculateTree())
 calc = calc_parser.parse
 
-
+@app.command()
 def main(file: Annotated[Optional[str], typer.Argument()]=None):
     if not file:
         while True:
@@ -49,10 +52,12 @@ def main(file: Annotated[Optional[str], typer.Argument()]=None):
     else:
         try:
             with open(file,"r") as f:
-                code = f.read()
-                calc(code)
+                code = f.readlines()
+                for line in code:
+                    line = line.rstrip()
+                    calc(line)
         except FileNotFoundError:
             console.print(f"ERROR: File {file} was not found,\ntry checking if you included the file extention", style="bold red")
 
 if __name__ == "__main__":
-    typer.run(main)
+    app()

@@ -15,9 +15,12 @@
          | NAME             -> var
          | "(" sum ")"
          | "out" "(" sum ")" -> out
+         | "sqrt" "(" sum ")" -> sqrt
+         | "pow" "(" sum "," sum ")" -> pow
 
     %import common.CNAME -> NAME
     %import common.NUMBER
     %import common.WS_INLINE
 
     %ignore WS_INLINE
+    %ignore /\/\/[^\n]*/
