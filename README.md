@@ -20,10 +20,10 @@ To run a .lmp (MathLamp source) file run `python main.py code.lmp` where code.lm
 # Example
 
 ```
-out(1 + 1) // Prints 2
+out[1 + ] // Prints 2
 x = 3 * 2 // Variables
-y = sqrt(4) // Square Root
-out(x / y)
+y = sqrt[4] // Square Root
+out[x / y]
 ```
 
 # Roadmap
