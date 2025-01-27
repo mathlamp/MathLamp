@@ -2,7 +2,7 @@
 # Check it here -> https://github.com/lark-parser/lark/blob/08c91939876bd3b2e525441534df47e0fb25a4d1/examples/calc.py
 import typer
 from lark import Lark, Transformer, v_args
-from typing_extensions import Annotated
+from typing import Annotated
 from typing import Optional
 from rich.console import Console
 
@@ -57,7 +57,7 @@ def main(file: Annotated[Optional[str], typer.Argument()]=None):
                     line = line.rstrip()
                     calc(line)
         except FileNotFoundError:
-            console.print(f"ERROR: File {file} was not found,\ntry checking if you included the file extention", style="bold red")
+            console.print(f"ERROR: File {file} was not found,\ntry checking if you included the file extension", style="bold red")
 
 if __name__ == "__main__":
     app()
