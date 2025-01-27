@@ -9,12 +9,11 @@ MathLamp is a simple, powerful, math-oriented language that can run complex equa
 
 # Install
 
-Run the [main.py](https://github.com/RubberSpring/MathLamp/blob/master/main.py) file to open te REPL.  
-To run a .lmp (MathLamp source) file run `python main.py code.lmp` where code.lmp is your code file.
+See [Installing](installing.md)
 
 # Features
 
-* Basic Artimetic operations (+ - * / %)
+* Basic Arithmetic operations (+ - * / %)
 * Really simple Algebra (sqrt() and pow())
 * A working REPL to type expressions
 * *more features planned(see the [Roadmap](#roadmap))*
@@ -30,9 +29,9 @@ out(x / y)
 
 # Roadmap
 
-- <input type="checkbox" disabled/>Add docs
-- <input type="checkbox" disabled/>Implement Data Types (*soon*😉)
-- <input type="checkbox" disabled/>Add control flow
-- <input type="checkbox" disabled/>Implement modules and packages
-- <input type="checkbox" disabled/>Implement std (MathLamp Standard Library)
-- <input type="checkbox" disabled/>Implement Geometry
+- [x] Add docs
+- [ ] Implement Data Types (*soon* 😉)
+- [ ] Add control flow
+- [ ] Implement modules and packages
+- [ ] Implement std (MathLamp Standard Library)
+- [ ] Implement Geometry

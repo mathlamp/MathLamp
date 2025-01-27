@@ -1,5 +1,36 @@
 site_name: MathLamp Docs
 repo_url: https://github.com/RubberSpring/MathLamp
 repo_name: MathLamp
-theme: readthedocs
-site_url: !ENV READTHEDOCS_CANONICAL_URL
+
+theme:
+  name: material
+  favicon: img/favicon.ico
+  logo: img/favicon.ico
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: amber
+      accent: yellow
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+        custom_checkbox: false
