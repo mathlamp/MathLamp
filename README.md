@@ -7,7 +7,7 @@ MathLamp is a simple, powerful, math-oriented language that can run complex equa
 
 # Install
 
-Run the [main.py](main.py) file to open te REPL.  
+Run the [main.py](mathlamp/main.py) file to open te REPL.  
 To run a .lmp (MathLamp source) file run `python main.py code.lmp` where code.lmp is your code file.
 
 # Features
