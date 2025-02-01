@@ -1,0 +1,3 @@
+{% for line in lines -%}
+out[{{ line.x }} {{ line.sign }} {{ line.y }}]
+{%+ endfor %}
