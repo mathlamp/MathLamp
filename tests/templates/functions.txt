@@ -1,0 +1,2 @@
+out[sqrt[{{ root }}]]
+out[pow[{{ x }},{{ y }}]]

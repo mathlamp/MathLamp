@@ -3,7 +3,7 @@
   <component name="de.achimonline.quickjinja.settings.QuickJinjaProjectSettingsState">
     <option name="settings">
       <QuickJinjaProjectSettings>
-        <option name="templateFilePath" value="$PROJECT_DIR$/pyproject.toml" />
+        <option name="templateFilePath" value="$PROJECT_DIR$/.gitignore" />
       </QuickJinjaProjectSettings>
     </option>
   </component>
