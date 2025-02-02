@@ -14,7 +14,7 @@ See [Installing](installing.md)
 # Features
 
 * Basic Arithmetic operations (+ - * / %)
-* Really simple Algebra (sqrt() and pow())
+* Really simple Algebra (sqrt[] and pow[])
 * A working REPL to type expressions
 * *more features planned(see the [Roadmap](#roadmap))*
 
