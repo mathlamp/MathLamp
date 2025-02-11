@@ -4,11 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6a2c6cfc-73ce-40b0-9f92-4b4bf15beea3" name="Changes" comment="Add errors">
+    <list default="true" id="6a2c6cfc-73ce-40b0-9f92-4b4bf15beea3" name="Changes" comment="Syntax changes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/getting-started.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/getting-started.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/installing.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/installing.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mathlamp/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/mathlamp/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/templates/functions.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/templates/functions.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,6 +17,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Python Script" />
+        <option value="MathLamp Script" />
       </list>
     </option>
   </component>
@@ -57,30 +56,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
-    &quot;Python tests.Python tests for test_operators.test_arthimetic.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.Python tests in main.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.test.py.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.tests.executor&quot;: &quot;Run&quot;,
-    &quot;Python.REPL.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.scratch.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/deck/PycharmProjects/MathLamp/tests/test_operators.py&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.fileTypes&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
+    "Python tests.Python tests for test_operators.test_arthimetic.executor": "Run",
+    "Python tests.Python tests in main.py.executor": "Run",
+    "Python tests.test.py.executor": "Run",
+    "Python tests.tests.executor": "Run",
+    "Python.REPL.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.scratch.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "/home/deck/PycharmProjects/MathLamp/tests/test_operators.py",
+    "settings.editor.selected.configurable": "preferences.fileTypes"
   },
-  &quot;keyToStringList&quot;: {
-    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
-      &quot;Python&quot;
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "Python"
     ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/mathlamp" />
@@ -285,7 +284,15 @@
       <option name="project" value="LOCAL" />
       <updated>1738417849454</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="Syntax changes">
+      <option name="closed" value="true" />
+      <created>1739278974144</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1739278974144</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -331,7 +338,6 @@
     <MESSAGE value="Add docs" />
     <MESSAGE value="Improve docs main page" />
     <MESSAGE value="Add support for Read The Docs" />
-    <MESSAGE value="Syntax changes" />
     <MESSAGE value="Merge remote-tracking branch 'origin/master'" />
     <MESSAGE value="Add cli to package" />
     <MESSAGE value="Add tests" />
@@ -340,7 +346,8 @@
     <MESSAGE value="Improved tests" />
     <MESSAGE value="Fixed docs" />
     <MESSAGE value="Add errors" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add errors" />
+    <MESSAGE value="Syntax changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Syntax changes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

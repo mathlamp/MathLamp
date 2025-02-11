@@ -1,2 +1,2 @@
-out[sqrt[{{ root }}]]
-out[pow[{{ x }},{{ y }}]]
+out(sqrt({{root}}))
+out(pow({{x}},{{y}}))

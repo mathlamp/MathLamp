@@ -3,7 +3,8 @@
   <component name="de.achimonline.quickjinja.settings.QuickJinjaProjectSettingsState">
     <option name="settings">
       <QuickJinjaProjectSettings>
-        <option name="templateFilePath" value="$PROJECT_DIR$/.gitignore" />
+        <option name="templateFilePath" value="$PROJECT_DIR$/tests/templates/operator.txt" />
+        <option name="variables" value="lines:&#10;    - x: 1&#10;      y: 2&#10;      sign: +&#10;    - x: 1&#10;      y: 2&#10;      sign: +&#10;    - x: 1&#10;      y: 2&#10;      sign: +&#10;    - x: 1&#10;      y: 2&#10;      sign: +" />
       </QuickJinjaProjectSettings>
     </option>
   </component>
