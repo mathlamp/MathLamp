@@ -4,8 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6a2c6cfc-73ce-40b0-9f92-4b4bf15beea3" name="Changes" comment="Improved tests">
+    <list default="true" id="6a2c6cfc-73ce-40b0-9f92-4b4bf15beea3" name="Changes" comment="Fixed docs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mathlamp/grammar.lark" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mathlamp/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/mathlamp/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,6 +27,11 @@
         <option name="argument" value="--tags" />
         <option name="title" value="All" />
       </GitPushTagMode>
+    </option>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="516637c14b40eb94a53f54b23110b3614767fbc8" />
+      </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -81,7 +88,7 @@
       <recent name="C:\Users\rafae\PycharmProjects\MathLamp\tests" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.scratch">
+  <component name="RunManager" selected="Python.REPL">
     <configuration name="REPL" type="PythonConfigurationType" factoryName="Python">
       <module name="MathLamp" />
       <option name="ENV_FILES" value="" />
@@ -151,6 +158,7 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.scratch" />
         <item itemvalue="Python.scratch" />
       </list>
     </recent_temporary>
@@ -305,7 +313,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="gh-pages" />
+                        <option value="master" />
                       </list>
                     </value>
                   </entry>
@@ -329,7 +337,8 @@
     <MESSAGE value="Add docs dependencies" />
     <MESSAGE value="Change mkdocs.yml" />
     <MESSAGE value="Improved tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="Improved tests" />
+    <MESSAGE value="Fixed docs" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed docs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

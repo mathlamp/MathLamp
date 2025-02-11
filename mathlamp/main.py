@@ -1,6 +1,7 @@
 # The original code that MathLamp originated was from a Lark template.
 # Check it here -> https://github.com/lark-parser/lark/blob/08c91939876bd3b2e525441534df47e0fb25a4d1/examples/calc.py
 import typer
+import sys
 from lark import Lark, Transformer, v_args
 from typing import Annotated
 from typing import Optional
@@ -38,16 +39,44 @@ app = typer.Typer(pretty_exceptions_enable=False)
 
 
 # Error definitions
+class LampError(Exception):
+    """Base class for MathLamp errors"""
+
+    def __init__(self, msg: str, file: str):
+        self.msg = f"On file: {file}\nERROR ({type(self).__name__}): {msg}"
+        super().__init__(self.msg)
+
+class InvalidVariable(LampError):
+    """Error for a missing variable"""
+
+    def __init__(self, var: str, file: str):
+        self.msg = "Variable not found: " + var
+        super().__init__(self.msg, file)
+
+class MissingFile(LampError):
+    """Error for an invalid file path"""
+    def __init__(self, file: str):
+        self.file = file
+        self.msg = f"File {self.file} was not found"
+        super().__init__(self.msg, self.file)
+
+# Error hook
+def lamp_error_hook(exc_type, exc_value, exc_tb):
+    if issubclass(exc_type, LampError):
+        print(exc_value, file=sys.stderr)
+    else:
+        sys.__excepthook__(exc_type, exc_value, exc_tb)
 
 
 # Transformer class
-@v_args(inline=True)  # Affects the signatures of the methods
+@v_args(inline=True)
 class CalculateTree(Transformer):
     from operator import add, sub, mul, truediv as div, neg, mod, pow
     from math import sqrt
 
-    def __init__(self):
+    def __init__(self, file: str):
         super().__init__()
+        self.file = file
         self.vars = {}
 
     def number(self, num):
@@ -61,20 +90,19 @@ class CalculateTree(Transformer):
         try:
             return self.vars[name]
         except KeyError:
-            raise Exception("ERROR: Variable not found: %s" % name)
+            raise InvalidVariable(name, self.file)
 
     def out(self, value):
         print(value)
 
 
-calc_parser = Lark(grammar, parser='lalr', transformer=CalculateTree())
-calc = calc_parser.parse
-
-
 # Command definition
 @app.command()
-def main(file: Annotated[Optional[str], typer.Argument()] = None):
-    if not file:
+def main(file: Annotated[Optional[str], typer.Argument()] = "REPL"):
+    sys.excepthook = lamp_error_hook
+    calc_parser = Lark(grammar, parser='lalr', transformer=CalculateTree(file))
+    calc = calc_parser.parse
+    if file == "REPL":
         while True:
             try:
                 s = input('> ')
@@ -89,7 +117,7 @@ def main(file: Annotated[Optional[str], typer.Argument()] = None):
                     line = line.rstrip()
                     calc(line)
         except FileNotFoundError:
-            print(f"ERROR: File {file} was not found,\ntry checking if you included the file extension")
+            raise MissingFile(file)
 
 
 if __name__ == "__main__":
