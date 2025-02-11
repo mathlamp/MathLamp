@@ -23,9 +23,9 @@ grammar = r"""
          | "-" atom         -> neg
          | NAME             -> var
          | "(" sum ")"
-         | "out" "[" sum "]" -> out
-         | "sqrt" "[" sum "]" -> sqrt
-         | "pow" "[" sum "," sum "]" -> pow
+         | "out" "(" sum ")" -> out
+         | "sqrt" "(" sum ")" -> sqrt
+         | "pow" "(" sum "," sum ")" -> pow
 
     %import common.CNAME -> NAME
     %import common.NUMBER

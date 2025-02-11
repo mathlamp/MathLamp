@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6a2c6cfc-73ce-40b0-9f92-4b4bf15beea3" name="Changes" comment="Fixed docs">
+    <list default="true" id="6a2c6cfc-73ce-40b0-9f92-4b4bf15beea3" name="Changes" comment="Add errors">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mathlamp/grammar.lark" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/getting-started.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/getting-started.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/installing.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/installing.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mathlamp/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/mathlamp/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -338,7 +339,8 @@
     <MESSAGE value="Change mkdocs.yml" />
     <MESSAGE value="Improved tests" />
     <MESSAGE value="Fixed docs" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed docs" />
+    <MESSAGE value="Add errors" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add errors" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -6,7 +6,7 @@ Here's a quick guide on MathLamp to get you started
 
     MathLamp needs to be installed before following this tutorial, if you don't have Mathlamp installed see [Installing](installing.md).
 
-First open a MathLamp REPL with `python main.py`,  
+First open a MathLamp REPL with `lamp`,  
 You should see a `>` in the console
 
 The REPL is where you can type expressions, and it will show you the result.
@@ -31,7 +31,7 @@ MathLamp can evaluate operations such as:
 When running a file, unlike the REPL, values will be only printed to the console if they are on an out() statement:
 ```
 // example.lmp
-out[1 + 1] // Outputs 2.0
+out(1 + 1) // Outputs 2.0
 2 + 2 // Outputs nothing
 ```
 
