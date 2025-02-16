@@ -4,6 +4,7 @@ from mathlamp.main import app
 from random import randrange
 from shutil import rmtree
 from math import sqrt
+from platform import system
 import os
 
 import pytest
@@ -11,7 +12,7 @@ from jinja2 import Environment, FileSystemLoader
 
 runner = CliRunner()
 
-environment = Environment(loader=FileSystemLoader("templates/"))
+environment = Environment(loader=FileSystemLoader(os.path.abspath("tests/templates")))
 
 
 @pytest.fixture(scope="session", autouse=True)
