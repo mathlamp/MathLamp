@@ -16,22 +16,42 @@ class LampError(Exception):
     """Base class for MathLamp errors"""
 
     def __init__(self, msg: str, file: str):
+        """Initializes a LampError
+
+        Args:
+            msg (str): The error's message
+            file (str): The file that the error ocurred
+        """
         self.msg = f"On file: {file}\nERROR ({type(self).__name__}): {msg}"
         super().__init__(self.msg)
 
+
 class InvalidVariable(LampError):
-    """Error for a missing variable"""
+    """Error for a invalid variable"""
 
     def __init__(self, var: str, file: str):
+        """Initializes a InvalidVariable error
+
+        Args:
+            var (str): The variable's name
+            file (str): The file that the error ocurred
+        """
         self.msg = "Variable not found: " + var
         super().__init__(self.msg, file)
 
+
 class MissingFile(LampError):
-    """Error for an invalid file path"""
+    """Error for an missing file"""
+
     def __init__(self, file: str):
-        self.file = file
-        self.msg = f"File {self.file} was not found"
-        super().__init__(self.msg, self.file)
+        """Initializes a MissingFile error
+
+        Args:
+            file (str): The missing file
+        """
+        self.msg = f"File {file} was not found"
+        super().__init__(self.msg, file)
+
 
 # Error hook
 def lamp_error_hook(exc_type, exc_value, exc_tb):
@@ -73,12 +93,12 @@ class CalculateTree(Transformer):
 @app.command()
 def main(file: Annotated[Optional[str], typer.Argument()] = "REPL"):
     sys.excepthook = lamp_error_hook
-    calc_parser = Lark(grammar, parser='lalr', transformer=CalculateTree(file))
+    calc_parser = Lark(grammar, parser="lalr", transformer=CalculateTree(file))
     calc = calc_parser.parse
     if file == "REPL":
         while True:
             try:
-                s = input('> ')
+                s = input("> ")
             except EOFError:
                 break
             print(calc(s))
