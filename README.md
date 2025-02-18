@@ -3,17 +3,17 @@
 [![issues - MathLamp](https://img.shields.io/github/issues/RubberSpring/MathLamp)](https://github.com/RubberSpring/MathLamp/issues)  
 # About
 
-MathLamp is a simple, powerful, math-oriented language that can run complex equations in no time.
+MathLamp is a simple, powerful, functional programming language that can run complex equations in no time.
 
 # Install
 
 Run the [main.py](mathlamp/main.py) file to open te REPL.  
-To run a .lmp (MathLamp source) file run `lamp code.lmp` where code.lmp is your code file.
+To run a .lmp (MathLamp source) file run `lamp [file]` where `[file]` is your code file.
 
 # Features
 
 * Basic Artimetic operations (+ - * / %)
-* Really simple Algebra (sqrt() and pow())
+* Really simple Algebra (`sqrt()` and `pow()`)
 * A working REPL to type expressions
 
 # Example
