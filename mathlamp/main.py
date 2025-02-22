@@ -13,10 +13,9 @@ app = typer.Typer(pretty_exceptions_enable=False)
 
 # Error definitions
 class LampError(Exception):
-    """Base class for MathLamp errors"""
 
     def __init__(self, msg: str, file: str):
-        """Initializes a LampError
+        """Base class for MathLamp errors
 
         Args:
             msg (str): The error's message
@@ -27,10 +26,12 @@ class LampError(Exception):
 
 
 class InvalidVariable(LampError):
-    """Error for a invalid variable"""
 
     def __init__(self, var: str, file: str):
-        """Initializes a InvalidVariable error
+        """Error for a invalid variable
+
+        Called when a invalid variable is found by the interpreter.
+        (Ex: Missing variables)
 
         Args:
             var (str): The variable's name
@@ -41,10 +42,11 @@ class InvalidVariable(LampError):
 
 
 class MissingFile(LampError):
-    """Error for an missing file"""
 
     def __init__(self, file: str):
-        """Initializes a MissingFile error
+        """Error for a missing file
+
+        Called when the `lamp` command looks for a non-existent file
 
         Args:
             file (str): The missing file
