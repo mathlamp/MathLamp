@@ -13,10 +13,9 @@ See [Installing](installing.md)
 
 # Features
 
-* Basic Arithmetic operations (+ - * / %)
-* Really simple Algebra (sqrt[] and pow[])
+* Basic Arithmetic operations (`+ - * / %`)
+* Really simple Algebra (`sqrt()` and `pow()`)
 * A working REPL to type expressions
-* *more features planned(see the [Roadmap](#roadmap))*
 
 # Example
 
@@ -26,12 +25,3 @@ x = 3 * 2 // Variables
 y = sqrt(4) // Square Root
 out(x / y)
 ```
-
-# Roadmap
-
-- [x] Add docs
-- [ ] Implement Data Types (*soon* 😉)
-- [ ] Add control flow
-- [ ] Implement modules and packages
-- [ ] Implement std (MathLamp Standard Library)
-- [ ] Implement Geometry
