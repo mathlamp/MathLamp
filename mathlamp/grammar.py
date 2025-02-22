@@ -2,6 +2,10 @@ grammar = r"""
 ?start: sum
           | NAME "=" sum    -> assign_var
 
+    ?func: "out" "(" sum ")" -> out
+         | "sqrt" "(" sum ")" -> sqrt
+         | "pow" "(" sum "," sum ")" -> pow
+
     ?sum: product
         | sum "+" product   -> add
         | sum "-" product   -> sub
@@ -15,9 +19,7 @@ grammar = r"""
          | "-" atom         -> neg
          | NAME             -> var
          | "(" sum ")"
-         | "out" "(" sum ")" -> out
-         | "sqrt" "(" sum ")" -> sqrt
-         | "pow" "(" sum "," sum ")" -> pow
+         | func
 
     %import common.CNAME -> NAME
     %import common.NUMBER

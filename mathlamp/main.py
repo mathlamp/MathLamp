@@ -75,7 +75,10 @@ class CalculateTree(Transformer):
         self.vars = {}
 
     def number(self, num):
-        return float(num)
+        try:
+            return int(num)
+        except ValueError:
+            return float(num)
 
     def assign_var(self, name, value):
         self.vars[name] = value
