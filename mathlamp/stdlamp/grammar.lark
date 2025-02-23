@@ -14,8 +14,17 @@
     | product "/" atom  -> div
     | product "%" atom  -> mod
 
+?list: "[" items "]"
+     | "[" "]" -> empty_list
+
+?items: item
+      | items "," item -> add_item
+
+?item: atom
+
 ?atom: NUMBER           -> number
      | STRING           -> str
+     | list
      | "-" atom         -> neg
      | NAME             -> var
      | "(" sum ")"

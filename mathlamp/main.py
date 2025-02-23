@@ -70,6 +70,22 @@ def lamp_error_hook(exc_type, exc_value, exc_tb):
     else:
         sys.__excepthook__(exc_type, exc_value, exc_tb)
 
+def flatten(nested_list: list) -> list:
+    """Flattens a list
+
+    Args:
+        nested_list (list): The list to be flattened
+
+    Returns:
+        list: The flattened list
+    """
+    result = []
+    for item in nested_list:
+        if isinstance(item, list):
+            result.extend(flatten(item))  # Recursively flatten the sublist
+        else:
+            result.append(item)
+    return result
 
 # Transformer class
 @v_args(inline=True)
@@ -90,6 +106,10 @@ class CalculateTree(Transformer):
 
     def str(self, txt):
         return txt[1:-1]
+    
+    def add_item(self, *args):
+        arg_list = [list(item) if isinstance(item, tuple) else item for item in args]
+        return flatten(arg_list)
 
     def assign_var(self, name, value):
         self.vars[name] = value
