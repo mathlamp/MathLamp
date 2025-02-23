@@ -16,10 +16,13 @@ grammar = r"""
         | product "%" atom  -> mod
 
     ?atom: NUMBER           -> number
+         | STRING           -> str
          | "-" atom         -> neg
          | NAME             -> var
          | "(" sum ")"
          | func
+    
+    STRING: /"([^"]*)"/
 
     %import common.CNAME -> NAME
     %import common.NUMBER
