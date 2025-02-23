@@ -24,3 +24,7 @@ x = 3 * 2 // Variables
 y = sqrt(4) // Square Root
 out(x / y)
 ```
+# Licensing
+
+`typer` license: [typer-LICENSE](https://github.com/mathlamp/MathLamp/blob/master/LICENSES/typer-LICENSE)  
+`lark` license: [lark-LICENSE](https://github.com/mathlamp/MathLamp/blob/master/LICENSES/lark-LICENSE)
