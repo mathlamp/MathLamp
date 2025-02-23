@@ -1,15 +1,23 @@
 # The original code that MathLamp originated was from a Lark template.
 # Check it here -> https://github.com/lark-parser/lark/blob/08c91939876bd3b2e525441534df47e0fb25a4d1/examples/calc.py
 import typer
-import sys
-from lark import Lark, Transformer, v_args
 from typing import Annotated
 from typing import Optional
 
-from mathlamp.grammar import grammar
+from lark import Lark, Transformer, v_args
+
+import sys
+from pathlib import Path
+
+from importlib import resources as impresources
+from mathlamp import liblamp
+
+grammar_file = impresources.files(liblamp) / 'grammar.lark'
+with grammar_file.open("r") as f:
+    global grammar
+    grammar = f.read()
 
 app = typer.Typer(pretty_exceptions_enable=False)
-
 
 # Error definitions
 class LampError(Exception):
