@@ -7,17 +7,17 @@ from typing import Optional
 from lark import Lark, Transformer, v_args
 
 import sys
-from pathlib import Path
 
 from importlib import resources as impresources
 from mathlamp import stdlamp
 
-grammar_file = impresources.files(stdlamp) / 'grammar.lark'
+grammar_file = impresources.files(stdlamp) / "grammar.lark"
 with grammar_file.open("r") as f:
     global grammar
     grammar = f.read()
 
 app = typer.Typer(pretty_exceptions_enable=False)
+
 
 # Error definitions
 class LampError(Exception):
@@ -87,7 +87,7 @@ class CalculateTree(Transformer):
             return int(num)
         except ValueError:
             return float(num)
-        
+
     def str(self, txt):
         return txt[1:-1]
 
