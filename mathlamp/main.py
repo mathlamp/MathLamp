@@ -10,9 +10,9 @@ import sys
 from pathlib import Path
 
 from importlib import resources as impresources
-from mathlamp import liblamp
+from mathlamp import stdlamp
 
-grammar_file = impresources.files(liblamp) / 'grammar.lark'
+grammar_file = impresources.files(stdlamp) / 'grammar.lark'
 with grammar_file.open("r") as f:
     global grammar
     grammar = f.read()
