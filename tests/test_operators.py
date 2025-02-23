@@ -23,7 +23,8 @@ def setup():
         os.makedirs(directory)
     yield directory
     print(f"\nRemoving {directory}...")
-    rmtree(directory)
+    if os.path.exists(directory):
+        rmtree(directory)
 
 
 def test_arthimetic(setup):

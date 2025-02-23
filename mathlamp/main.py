@@ -127,10 +127,13 @@ class CalculateTree(Transformer):
 
 # Command definition
 @app.command()
-def main(file: Annotated[Optional[str], typer.Argument()] = "REPL"):
+def main(file: Annotated[Optional[str], typer.Argument()] = "REPL", repl: Annotated[str, typer.Option("--repl","-r",help="Pass a MathLamp expression to the repl")] = ""):
     sys.excepthook = lamp_error_hook
     calc_parser = Lark(grammar, parser="lalr", transformer=CalculateTree(file))
     calc = calc_parser.parse
+    if repl:
+        print(calc(repl))
+        exit(0)
     if file == "REPL":
         while True:
             try:
