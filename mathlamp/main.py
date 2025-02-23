@@ -70,6 +70,7 @@ def lamp_error_hook(exc_type, exc_value, exc_tb):
     else:
         sys.__excepthook__(exc_type, exc_value, exc_tb)
 
+
 def flatten(nested_list: list) -> list:
     """Flattens a list
 
@@ -86,6 +87,7 @@ def flatten(nested_list: list) -> list:
         else:
             result.append(item)
     return result
+
 
 # Transformer class
 @v_args(inline=True)
@@ -106,7 +108,7 @@ class CalculateTree(Transformer):
 
     def str(self, txt):
         return txt[1:-1]
-    
+
     def add_item(self, *args):
         arg_list = [list(item) if isinstance(item, tuple) else item for item in args]
         return flatten(arg_list)
@@ -127,7 +129,12 @@ class CalculateTree(Transformer):
 
 # Command definition
 @app.command()
-def main(file: Annotated[Optional[str], typer.Argument()] = "REPL", repl: Annotated[str, typer.Option("--repl","-r",help="Pass a MathLamp expression to the repl")] = ""):
+def main(
+    file: Annotated[Optional[str], typer.Argument()] = "REPL",
+    repl: Annotated[
+        str, typer.Option("--repl", "-r", help="Pass a MathLamp expression to the repl")
+    ] = "",
+):
     sys.excepthook = lamp_error_hook
     calc_parser = Lark(grammar, parser="lalr", transformer=CalculateTree(file))
     calc = calc_parser.parse
