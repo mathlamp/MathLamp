@@ -71,18 +71,18 @@ def lamp_error_hook(exc_type, exc_value, exc_tb):
         sys.__excepthook__(exc_type, exc_value, exc_tb)
 
 
-def flatten(nested_list: list) -> list:
+def flatten(nested_list: list | tuple) -> list:
     """Flattens a list
 
     Args:
-        nested_list (list): The list to be flattened
+        nested_list (list | tuple): The list to be flattened
 
     Returns:
         list: The flattened list
     """
     result = []
     for item in nested_list:
-        if isinstance(item, list):
+        if isinstance(item, list | tuple):
             result.extend(flatten(item))  # Recursively flatten the sublist
         else:
             result.append(item)
@@ -101,29 +101,49 @@ class CalculateTree(Transformer):
         self.vars = {}
 
     def number(self, num):
+        """Number value wrapper (`int` and `float`)"""
         try:
             return int(num)
         except ValueError:
             return float(num)
 
     def str(self, txt):
+        """String value wrapper (`str`)"""
         return txt[1:-1]
 
     def add_item(self, *args):
+        """List value wrapper (`list`)"""
         arg_list = [list(item) if isinstance(item, tuple) else item for item in args]
         return flatten(arg_list)
 
+    def dict_pair(self, key, value):
+        """Dictonary key: value pair wrapper"""
+        return (key, value)
+    
+    def dict_items(self, pair1, pair2):
+        """Dictonary items wrapper"""
+        return (pair1, pair2)
+    
+    def dict_val(self, dict_val):
+        flattned_dict = flatten(dict_val)
+        result = dict(zip(flattned_dict[::2], flattned_dict[1::2]))
+        return result
+
+
     def assign_var(self, name, value):
+        """Variable assignement wrapper"""
         self.vars[name] = value
         return value
 
     def var(self, name):
+        """Variable name call wrapper"""
         try:
             return self.vars[name]
         except KeyError:
             raise InvalidVariable(name, self.file)
 
     def out(self, value):
+        """Out function"""
         print(value)
 
 

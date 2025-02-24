@@ -22,9 +22,18 @@
 
 ?item: atom
 
+?dict: "{" dict_items "}"
+      | "{" "}" -> empty_dict
+
+?dict_items: dict_item
+           | dict_items "," dict_item
+
+?dict_item: sum ":" sum -> dict_pair
+
 ?atom: NUMBER           -> number
      | STRING           -> str
      | list
+     | dict             -> dict_val
      | "-" atom         -> neg
      | NAME             -> var
      | "(" sum ")"
@@ -34,7 +43,7 @@ STRING: /"([^"]*)"/
 
 %import common.CNAME -> NAME
 %import common.NUMBER
-%import common.WS_INLINE
+%import common.WS
 
-%ignore WS_INLINE
+%ignore WS
 %ignore /\/\/[^\n]*/
