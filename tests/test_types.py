@@ -19,3 +19,8 @@ def test_list():
     result = runner.invoke(app, ["-r", "[1,2,3]"])
     assert result.exit_code == 0
     assert result.stdout.strip() == "[1, 2, 3]"
+
+def test_dict():
+    result = runner.invoke(app, ["-r", '{"foo":"baz","test":1}'])
+    assert result.exit_code == 0
+    assert result.stdout.strip() == "{'foo': 'baz', 'test': 1}"
