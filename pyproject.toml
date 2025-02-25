@@ -1,6 +1,6 @@
 [project]
 name = "MathLamp"
-version = "1.0.0"
+version = "1.1.0"
 description = "a functional programmig language focused on math"
 authors = [
     {name = "RubberSpring",email = "143825964+RubberSpring@users.noreply.github.com"}
