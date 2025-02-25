@@ -92,7 +92,21 @@ def flatten(nested_list: list | tuple) -> list:
 # Transformer class
 @v_args(inline=True)
 class CalculateTree(Transformer):
-    from operator import add, sub, mul, truediv as div, neg, mod, pow
+    from operator import (
+        add,
+        sub,
+        mul,
+        truediv as div,
+        neg,
+        mod,
+        pow,
+        eq,
+        ne,
+        lt,
+        le,
+        gt,
+        ge,
+    )
     from math import sqrt
 
     def __init__(self, file: str):
@@ -111,6 +125,12 @@ class CalculateTree(Transformer):
         """String value wrapper (`str`)"""
         return txt[1:-1]
 
+    def true(self):
+        return True
+
+    def false(self):
+        return False
+
     def add_item(self, *args):
         """List value wrapper (`list`)"""
         arg_list = [list(item) if isinstance(item, tuple) else item for item in args]
@@ -119,16 +139,15 @@ class CalculateTree(Transformer):
     def dict_pair(self, key, value):
         """Dictonary key: value pair wrapper"""
         return (key, value)
-    
+
     def dict_items(self, pair1, pair2):
         """Dictonary items wrapper"""
         return (pair1, pair2)
-    
+
     def dict_val(self, dict_val):
         flattned_dict = flatten(dict_val)
         result = dict(zip(flattned_dict[::2], flattned_dict[1::2]))
         return result
-
 
     def assign_var(self, name, value):
         """Variable assignement wrapper"""
@@ -145,6 +164,10 @@ class CalculateTree(Transformer):
     def out(self, value):
         """Out function"""
         print(value)
+
+    def if_block(self, condition, code):
+        if condition:
+            return code
 
 
 # Command definition
