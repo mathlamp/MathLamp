@@ -4,7 +4,6 @@ from mathlamp.main import app
 from random import randrange
 from shutil import rmtree
 from math import sqrt
-from platform import system
 import os
 
 import pytest
@@ -33,7 +32,7 @@ def test_arthimetic(setup):
         {"x": randrange(1, 15), "sign": "-", "y": randrange(1, 15)},
         {"x": randrange(1, 15), "sign": "*", "y": randrange(1, 15)},
         {"x": randrange(1, 15), "sign": "/", "y": randrange(1, 15)},
-        {"x": randrange(1, 15), "sign": "%", "y": randrange(1, 15)}
+        {"x": randrange(1, 15), "sign": "%", "y": randrange(1, 15)},
     ]
     template = environment.get_template("operator.txt")
     with open(f"{setup}/arthimetic.lmp", "w") as f:
@@ -67,11 +66,7 @@ def test_arthimetic(setup):
 
 def test_functions(setup):
     template = environment.get_template("functions.txt")
-    context = {
-        "root": randrange(1, 13),
-        "x": randrange(1, 13),
-        "y": randrange(1, 5)
-    }
+    context = {"root": randrange(1, 13), "x": randrange(1, 13), "y": randrange(1, 5)}
     with open(f"{setup}/functions.lmp", "w") as f:
         print("\nWriting tmp file...")
         f.write(template.render(context))
