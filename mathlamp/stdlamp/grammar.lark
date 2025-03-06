@@ -1,6 +1,7 @@
 ?start: sum
       | NAME "=" sum -> assign_var
       | "if" "(" condition ")" block -> if_block
+      | "repeat" sum block -> repeat_block
 
 ?condition: sum "==" sum  -> eq
           | sum "!=" sum  -> ne

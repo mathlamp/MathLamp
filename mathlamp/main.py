@@ -109,9 +109,10 @@ class CalculateTree(Transformer):
     )
     from math import sqrt
 
-    def __init__(self, file: str):
+    def __init__(self, file: str = "REPL"):
         super().__init__()
         self.file = file
+        self.nonprint = ["out"]
         self.vars = {}
 
     def number(self, num):
@@ -163,11 +164,21 @@ class CalculateTree(Transformer):
 
     def out(self, value):
         """Out function"""
-        print(value)
+        if self.file == "REPL":
+            return value
+        else:
+            print(value)
 
     def if_block(self, condition, code):
         if condition:
             return code
+        
+    def repeat_block(self, number, block):
+        results = []
+        calc_parser = Lark(grammar, parser="lalr", transformer=CalculateTree("REPL"))
+        calc = calc_parser.parse
+        for _ in range(number):
+            calc(block)
 
 
 # Command definition
@@ -179,7 +190,7 @@ def main(
     ] = "",
 ):
     sys.excepthook = lamp_error_hook
-    calc_parser = Lark(grammar, parser="lalr", transformer=CalculateTree(file))
+    calc_parser = Lark(grammar, parser="lalr", transformer=CalculateTree())
     calc = calc_parser.parse
     if repl:
         print(calc(repl))
@@ -194,10 +205,9 @@ def main(
     else:
         try:
             with open(file, "r") as f:
-                code = f.readlines()
-                for line in code:
-                    line = line.rstrip()
-                    calc(line)
+                code = f.read()
+                calc(code)
+                
         except FileNotFoundError:
             raise MissingFile(file)
 
