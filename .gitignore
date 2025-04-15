@@ -52,6 +52,7 @@ coverage.xml
 test-temp/
 .pytest_cache/
 cover/
+test.lmp
 
 # Translations
 *.mo

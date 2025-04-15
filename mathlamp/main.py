@@ -4,7 +4,8 @@ import typer
 from typing import Annotated
 from typing import Optional
 
-from lark import Lark, Transformer, v_args
+from lark import Lark, v_args
+from lark.visitors import Interpreter
 
 import sys
 
@@ -88,98 +89,35 @@ def flatten(nested_list: list | tuple) -> list:
             result.append(item)
     return result
 
-
-# Transformer class
-@v_args(inline=True)
-class CalculateTree(Transformer):
-    from operator import (
-        add,
-        sub,
-        mul,
-        truediv as div,
-        neg,
-        mod,
-        pow,
-        eq,
-        ne,
-        lt,
-        le,
-        gt,
-        ge,
-    )
-    from math import sqrt
-
+class CalculateTree(Interpreter):
     def __init__(self, file: str = "REPL"):
         super().__init__()
         self.file = file
-        self.nonprint = ["out"]
         self.vars = {}
 
-    def number(self, num):
-        """Number value wrapper (`int` and `float`)"""
-        try:
-            return int(num)
-        except ValueError:
-            return float(num)
+    def start(self, tree):
+        self.visit_children(tree)
 
-    def str(self, txt):
-        """String value wrapper (`str`)"""
-        return txt[1:-1]
-
-    def true(self):
-        return True
-
-    def false(self):
-        return False
-
-    def add_item(self, *args):
-        """List value wrapper (`list`)"""
-        arg_list = [list(item) if isinstance(item, tuple) else item for item in args]
-        return flatten(arg_list)
-
-    def dict_pair(self, key, value):
-        """Dictonary key: value pair wrapper"""
-        return (key, value)
-
-    def dict_items(self, pair1, pair2):
-        """Dictonary items wrapper"""
-        return (pair1, pair2)
-
-    def dict_val(self, dict_val):
-        flattned_dict = flatten(dict_val)
-        result = dict(zip(flattned_dict[::2], flattned_dict[1::2]))
-        return result
-
-    def assign_var(self, name, value):
-        """Variable assignement wrapper"""
-        self.vars[name] = value
-        return value
-
-    def var(self, name):
-        """Variable name call wrapper"""
-        try:
-            return self.vars[name]
-        except KeyError:
-            raise InvalidVariable(name, self.file)
-
-    def out(self, value):
-        """Out function"""
+    def out(self, tree):
         if self.file == "REPL":
-            return value
+            return self.visit_children(tree)[0]
         else:
-            print(value)
+            print(self.visit_children(tree)[0])
+    
+    def add(self, tree):
+        data = self.visit_children(tree)
+        return data[0] + data[1]
 
-    def if_block(self, condition, code):
-        if condition:
-            return code
-        
-    def repeat_block(self, number, block):
-        results = []
-        calc_parser = Lark(grammar, parser="lalr", transformer=CalculateTree("REPL"))
-        calc = calc_parser.parse
-        for _ in range(number):
-            calc(block)
-
+    def number(self, tree):
+        from re import match
+        val =  tree.children[0].value
+        if match(r'[0-9]+\.[0-9]+', val):
+            return float(val)
+        else:
+            return int(val)
+    
+    def str(self, tree):
+        return tree.children[0].value
 
 # Command definition
 @app.command()
@@ -190,10 +128,10 @@ def main(
     ] = "",
 ):
     sys.excepthook = lamp_error_hook
-    calc_parser = Lark(grammar, parser="lalr", transformer=CalculateTree())
-    calc = calc_parser.parse
+    calc_parser = Lark(grammar, parser="lalr")
     if repl:
-        print(calc(repl))
+        tree = calc_parser.parse(repl)
+        print(CalculateTree().visit(tree))
         exit(0)
     if file == "REPL":
         while True:
@@ -201,12 +139,14 @@ def main(
                 s = input("> ")
             except EOFError:
                 break
-            print(calc(s))
+            tree = calc_parser.parse(s)
+            print(CalculateTree().visit(tree))
     else:
         try:
             with open(file, "r") as f:
                 code = f.read()
-                calc(code)
+                tree = calc_parser.parse(code)
+                CalculateTree(file).visit(tree)
                 
         except FileNotFoundError:
             raise MissingFile(file)

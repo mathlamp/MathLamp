@@ -1,4 +1,6 @@
-?start: sum
+?start: statement*
+
+?statement: sum
       | NAME "=" sum -> assign_var
       | "if" "(" condition ")" block -> if_block
       | "repeat" sum block -> repeat_block
