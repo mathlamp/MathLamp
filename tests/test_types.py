@@ -1,5 +1,7 @@
 from typer.testing import CliRunner
 from mathlamp.main import app
+from re import match
+import pytest
 
 runner = CliRunner()
 
@@ -7,13 +9,16 @@ runner = CliRunner()
 def test_int():
     result = runner.invoke(app, ["-r", "1+1"])
     assert result.exit_code == 0
-    int(result.stdout)
-
+    val = result.stdout
+    if match(r"[0-9]+\.[0-9]+", val):
+        pytest.fail("Value is a float")
 
 def test_float():
     result = runner.invoke(app, ["-r", "1.2+1"])
     assert result.exit_code == 0
-    float(result.stdout)
+    val = result.stdout
+    if not match(r"[0-9]+\.[0-9]+", val):
+        pytest.fail("Value is a int")
 
 
 def test_list():

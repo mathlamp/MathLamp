@@ -5,12 +5,16 @@
       | "if" "(" condition ")" block -> if_block
       | "repeat" sum block -> repeat_block
 
+?bool: "true" -> true
+     | "false" -> false
+
 ?condition: sum "==" sum  -> eq
           | sum "!=" sum  -> ne
           | sum "<" sum  -> lt
           | sum "<=" sum  -> le
           | sum ">" sum  -> gt
           | sum ">=" sum  -> ge
+          | bool
 
 ?block: "{" code "}"
 
@@ -32,6 +36,7 @@
 
 ?list: "[" items "]"
      | "[" "]" -> empty_list
+     | "[" item "]" -> single_list
 
 ?items: item
       | items "," item -> add_item
@@ -50,8 +55,7 @@
      | STRING           -> str
      | list
      | dict             -> dict_val
-     | "true"           -> true
-     | "false"          -> false
+     | bool
      | "-" atom         -> neg
      | NAME             -> var
      | "(" sum ")"
