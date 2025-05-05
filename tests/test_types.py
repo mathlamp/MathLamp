@@ -13,6 +13,7 @@ def test_int():
     if match(r"[0-9]+\.[0-9]+", val):
         pytest.fail("Value is a float")
 
+
 def test_float():
     result = runner.invoke(app, ["-r", "1.2+1"])
     assert result.exit_code == 0

@@ -122,6 +122,15 @@ class CalculateTree(Interpreter):
         else:
             return val
 
+    def var(self, tree):
+        name = tree.children[0].value
+        return self.vars[name]
+    
+    def assign_var(self, tree):
+        name = tree.children[0].value
+        val = self.visit_children(tree)[1]
+        self.vars[name] = val
+
     def add(self, tree):
         data = self.visit_children(tree)
         return data[0] + data[1]
@@ -157,30 +166,30 @@ class CalculateTree(Interpreter):
 
     def str(self, tree):
         return tree.children[0].value[1:-1]
-    
+
     def empty_list(self, tree):
         return []
-    
+
     def single_list(self, tree):
         data = self.visit_children(tree)
         return [data[0]]
-    
+
     def add_item(self, tree):
         data = self.visit_children(tree)
-        val = [data[0],data[1]]
+        val = [data[0], data[1]]
         return flatten(val)
-    
+
     def empty_dict(self, tree):
         return {}
-    
+
     def dict_pair(self, tree):
         data = self.visit_children(tree)
-        return (data[0],data[1])
-    
+        return (data[0], data[1])
+
     def dict_items(self, tree):
         data = self.visit_children(tree)
         return flatten(data)
-    
+
     def dict_val(self, tree):
         data = self.visit_children(tree)
         if isinstance(data[0], list):
@@ -190,46 +199,60 @@ class CalculateTree(Interpreter):
 
     def true(self, tree):
         return True
-    
+
     def false(self, tree):
         return False
 
     def if_block(self, tree):
-        data = self.visit_children(tree)
-        if data[0]:
-            self.visit_children(tree.children[1])
-            if not data[1] == None:
-                return data[1]
+        data = self.visit(tree.children[0])
+        if data:
+            out = self.visit(tree.children[1])
+            if not out == None:
+                return out
 
     def eq(self, tree):
         from operator import eq
+
         data = self.visit_children(tree)
-        return eq(data[0],data[1])
+        return eq(data[0], data[1])
 
     def ne(self, tree):
         from operator import ne
+
         data = self.visit_children(tree)
-        return ne(data[0],data[1])
+        return ne(data[0], data[1])
 
     def lt(self, tree):
         from operator import lt
+
         data = self.visit_children(tree)
-        return lt(data[0],data[1])
+        return lt(data[0], data[1])
 
     def le(self, tree):
         from operator import le
+
         data = self.visit_children(tree)
-        return le(data[0],data[1])
+        return le(data[0], data[1])
 
     def gt(self, tree):
         from operator import gt
+
         data = self.visit_children(tree)
-        return gt(data[0],data[1])
+        return gt(data[0], data[1])
 
     def ge(self, tree):
         from operator import ge
+
         data = self.visit_children(tree)
-        return ge(data[0],data[1])
+        return ge(data[0], data[1])
+
+    def repeat_block(self, tree):
+        data = self.visit(tree.children[0])
+        for _ in range(data):
+            out = self.visit(tree.children[1])
+            if not out == None:
+                print(out)
+
 
 # Command definition
 @app.command()
@@ -247,13 +270,16 @@ def main(
         exit(0)
     if file == "REPL":
         print("The MathLamp REPL\nVersion 1.2.0-dev =DEV TESTING=")
+        calc = CalculateTree()
         while True:
             try:
                 s = input("> ")
             except EOFError:
                 break
             tree = calc_parser.parse(s)
-            print(CalculateTree().visit(tree))
+            val = calc.visit(tree)
+            if not val == None:
+                print(val)
     else:
         try:
             with open(file, "r") as f:
