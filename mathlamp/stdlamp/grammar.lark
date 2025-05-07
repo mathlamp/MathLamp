@@ -3,7 +3,8 @@
 ?statement: sum
       | NAME "=" sum -> assign_var
       | "if" "(" condition ")" block -> if_block
-      | "repeat" sum block -> repeat_block
+      | "repeat" "(" sum ")" block -> repeat_block
+      | "for" "(" sum "in" sum ")" block -> for_block
 
 ?bool: "true" -> true
      | "false" -> false
