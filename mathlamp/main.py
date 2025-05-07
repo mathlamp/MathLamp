@@ -256,7 +256,16 @@ class CalculateTree(Interpreter):
             out = self.visit(tree.children[1])
             if not out == None:
                 print(out)
-
+    
+    def for_block(self,tree):
+        name = tree.children[0].children[0].value
+        num = self.visit(tree.children[1])
+        for i in range(num):
+            self.vars[name] = i
+            out = self.visit(tree.children[2])
+            if not out == None:
+                print(out)
+            self.vars.pop(name)
 
 # Command definition
 @app.command()
