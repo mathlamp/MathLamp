@@ -7,6 +7,10 @@ from typing import Optional
 from lark import Lark, v_args
 from lark.visitors import Interpreter
 
+from rich.console import Console
+import rich
+console = Console()
+
 import sys
 
 from importlib import resources as impresources
@@ -67,7 +71,7 @@ class MissingFile(LampError):
 # Error hook
 def lamp_error_hook(exc_type, exc_value, exc_tb):
     if issubclass(exc_type, LampError):
-        print(exc_value, file=sys.stderr)
+        rich.print(f"[bold red]{exc_value}[/bold red]", file=sys.stderr)
     else:
         sys.__excepthook__(exc_type, exc_value, exc_tb)
 
@@ -269,7 +273,7 @@ def main(
         print(CalculateTree().visit(tree))
         exit(0)
     if file == "REPL":
-        print("The MathLamp REPL\nVersion 1.2.0-dev =DEV TESTING=")
+        console.print("[yellow]The MathLamp REPL[/yellow]\nVersion [bold cyan]1.2.0-dev[/bold cyan] [bold red]=DEV TESTING=")
         calc = CalculateTree()
         while True:
             try:
