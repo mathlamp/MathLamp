@@ -5,6 +5,7 @@
       | "if" "(" condition ")" block -> if_block
       | "repeat" "(" sum ")" block -> repeat_block
       | "for" "(" sum "in" sum ")" block -> for_block
+      | "func" NAME "(" params? ")" block -> func_block
 
 ?bool: "true" -> true
      | "false" -> false
@@ -25,6 +26,11 @@
 ?func: "out" "(" sum ")" -> out
      | "sqrt" "(" sum ")" -> sqrt
      | "pow" "(" sum "," sum ")" -> pow
+     | NAME "(" args? ")" -> default_func
+
+?args: sum ("," sum)* -> args
+
+?params: NAME ("," NAME)* -> params
 
 ?sum: product
     | sum "+" product -> add

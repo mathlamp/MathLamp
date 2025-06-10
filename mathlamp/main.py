@@ -4,11 +4,12 @@ import typer
 from typing import Annotated
 from typing import Optional
 
-from lark import Lark, v_args
+from lark import Lark
 from lark.visitors import Interpreter
 
 from rich.console import Console
 import rich
+
 console = Console()
 
 import sys
@@ -67,6 +68,17 @@ class MissingFile(LampError):
         self.msg = f"File {file} was not found"
         super().__init__(self.msg, file)
 
+class ArgumentError(LampError):
+    def __init__(self, num: int, exp: int, func: str, file: str):
+        """Error for a invalid number of arguments
+
+        Args:
+            num (int): The provided number of args
+            exp (int): The expected number of args 
+            file (str): The file that the error ocurred
+        """
+        self.msg = f"Function {func} recived {num} args, but expected {exp} args"
+        super().__init__(self.msg, file)
 
 # Error hook
 def lamp_error_hook(exc_type, exc_value, exc_tb):
@@ -99,6 +111,7 @@ class CalculateTree(Interpreter):
         super().__init__()
         self.file = file
         self.vars = {}
+        self.funcs = []
 
     def start(self, tree):
         self.visit_children(tree)
@@ -129,7 +142,7 @@ class CalculateTree(Interpreter):
     def var(self, tree):
         name = tree.children[0].value
         return self.vars[name]
-    
+
     def assign_var(self, tree):
         name = tree.children[0].value
         val = self.visit_children(tree)[1]
@@ -254,18 +267,53 @@ class CalculateTree(Interpreter):
         data = self.visit(tree.children[0])
         for _ in range(data):
             out = self.visit(tree.children[1])
-            if not out == None:
-                print(out)
-    
-    def for_block(self,tree):
+            if type(out).__name__ == "list":
+                for i in flatten(out):
+                    print(i)
+            elif not out == None:
+                print(out) 
+
+    def for_block(self, tree):
         name = tree.children[0].children[0].value
         num = self.visit(tree.children[1])
         for i in num:
             self.vars[name] = i
             out = self.visit(tree.children[2])
-            if not out == None:
-                print(out)
-            self.vars.pop(name)
+            if self.file == "REPL":
+                if type(out).__name__ == "list":
+                    for i in flatten(out):
+                        print(i)
+                elif not out == None:
+                    print(out)
+
+    def func_block(self, tree):
+        name = tree.children[0].value
+        if tree.children[1].data == "params":
+            params = self.visit(tree.children[1])
+            block = tree.children[2]
+        else:
+            params = []
+            block = tree.children[1]
+        func = {"name": name, "params": params, "block": block}
+        self.funcs.append(func)
+
+    def default_func(self, tree):
+        name = tree.children[0].value
+        args = self.visit(tree.children[1])
+        func = next(filter(lambda x: x["name"] == name, self.funcs), None)
+        if not len(args) == len(func["params"]):
+            raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)
+        if not len(args) == 0:
+            for i, arg in enumerate(args):
+                self.vars[func["params"][i]] = arg
+        result = self.visit(func["block"])
+        if self.file == "REPL":
+                if type(result).__name__ == "list":
+                    for i in flatten(result):
+                        print(i)
+                elif not result == None:
+                    print(result)
+        
 
 # Command definition
 @app.command()
@@ -282,7 +330,9 @@ def main(
         print(CalculateTree().visit(tree))
         exit(0)
     if file == "REPL":
-        console.print("[yellow]The MathLamp REPL[/yellow]\nVersion [bold cyan]1.2.0-dev[/bold cyan] [bold red]=DEV TESTING=")
+        console.print(
+            "[yellow]The MathLamp REPL[/yellow]\nVersion [bold cyan]1.2.0-dev[/bold cyan] [bold red]=DEV TESTING="
+        )
         calc = CalculateTree()
         while True:
             try:
