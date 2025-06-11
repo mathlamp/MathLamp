@@ -299,7 +299,10 @@ class CalculateTree(Interpreter):
 
     def default_func(self, tree):
         name = tree.children[0].value
-        args = self.visit(tree.children[1])
+        try:
+            args = self.visit(tree.children[1])
+        except IndexError:
+            args = []
         func = next(filter(lambda x: x["name"] == name, self.funcs), None)
         if not len(args) == len(func["params"]):
             raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)

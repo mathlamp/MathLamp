@@ -64,7 +64,7 @@ def test_arthimetic(setup):
         assert float(c) == o
 
 
-def test_functions(setup):
+def test_math_functins(setup):
     template = environment.get_template("functions.txt")
     context = {"root": randrange(1, 13), "x": randrange(1, 13), "y": randrange(1, 5)}
     with open(f"{setup}/functions.lmp", "w") as f:
