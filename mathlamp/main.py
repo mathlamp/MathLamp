@@ -60,7 +60,7 @@ class MissingFile(LampError):
     def __init__(self, file: str):
         """Error for a missing file
 
-        Called when the `lamp` command looks for a non-existent file
+        Called when a file waas not found
 
         Args:
             file (str): The missing file
@@ -68,17 +68,19 @@ class MissingFile(LampError):
         self.msg = f"File {file} was not found"
         super().__init__(self.msg, file)
 
+
 class ArgumentError(LampError):
     def __init__(self, num: int, exp: int, func: str, file: str):
         """Error for a invalid number of arguments
 
         Args:
             num (int): The provided number of args
-            exp (int): The expected number of args 
+            exp (int): The expected number of args
             file (str): The file that the error ocurred
         """
         self.msg = f"Function {func} recived {num} args, but expected {exp} args"
         super().__init__(self.msg, file)
+
 
 # Error hook
 def lamp_error_hook(exc_type, exc_value, exc_tb):
@@ -271,7 +273,7 @@ class CalculateTree(Interpreter):
                 for i in flatten(out):
                     print(i)
             elif not out == None:
-                print(out) 
+                print(out)
 
     def for_block(self, tree):
         name = tree.children[0].children[0].value
@@ -311,12 +313,73 @@ class CalculateTree(Interpreter):
                 self.vars[func["params"][i]] = arg
         result = self.visit(func["block"])
         if self.file == "REPL":
-                if type(result).__name__ == "list":
-                    for i in flatten(result):
-                        print(i)
-                elif not result == None:
-                    print(result)
-        
+            if type(result).__name__ == "list":
+                for i in flatten(result):
+                    print(i)
+            elif not result == None:
+                print(result)
+
+    def import_stmt(self, tree):
+        from pathlib import Path
+
+        module_name = tree.children[0].value
+        try:
+            tree.children[1]
+            load_pkg = False
+        except IndexError:
+            load_pkg = True
+        if load_pkg:
+            try:
+                tree.children[1].children[0]
+                has_list = True
+            except IndexError:
+                has_list = False
+            if has_list:
+                imp_list = []
+                for name in tree.children[1].children:
+                    imp_list.append(name.value)
+                with open(Path(module_name + ".lmp"), "r") as f:
+                    import_lex = Lark(grammar, parser="lalr")
+                    import_parser = CalculateTree()
+                    text = f.read()
+                    ast = import_lex.parse(text)
+                    import_parser.visit(ast)
+                    gen_funcs = import_parser.funcs
+                    filter_list = [
+                        func for func in gen_funcs if func["name"] == imp_list["name"]
+                    ]
+                    new_funcs = self.funcs + filter_list
+                    self.funcs = new_funcs
+        else:
+            try:
+                tree.children[1].children[0]
+                has_list = True
+            except IndexError:
+                has_list = False
+            if has_list:
+                imp_list = []
+                for name in tree.children[1].children:
+                    imp_list.append(name.value)
+                with open(Path(module_name + ".lmp"), "r") as f:
+                    import_lex = Lark(grammar, parser="lalr")
+                    import_parser = CalculateTree()
+                    text = f.read()
+                    ast = import_lex.parse(text)
+                    import_parser.visit(ast)
+                    gen_funcs = import_parser.funcs
+                    filter_list = [x for x in gen_funcs if x["name"] in imp_list]
+                    new_funcs = self.funcs + filter_list
+                    self.funcs = new_funcs
+            else:
+                with open(Path(module_name + ".lmp"), "r") as f:
+                    import_lex = Lark(grammar, parser="lalr")
+                    import_parser = CalculateTree()
+                    text = f.read()
+                    ast = import_lex.parse(text)
+                    import_parser.visit(ast)
+                    new_funcs = self.funcs + import_parser.funcs
+                    self.funcs = new_funcs
+
 
 # Command definition
 @app.command()
