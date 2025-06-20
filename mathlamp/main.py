@@ -99,13 +99,14 @@ class InvalidFunction(LampError):
 def lamp_error_hook(exc_type, exc_value, exc_tb):
     if issubclass(exc_type, LampError):
         rich.print(f"[bold red]{exc_value}[/bold red]", file=sys.stderr)
+        exit(1)
     if exc_type == UnexpectedToken:
         parser = exc_value.interactive_parser
         token = exc_value.token
         line = token.line
         column = token.column
-        print(token.type)
         rich.print(f"[bold red]ERROR (InvalidSyntax) At line {line}, column {column}:\n Expected one of: {parser.accepts()}[/bold red]", file=sys.stderr)
+        exit(1)
     else:
         sys.__excepthook__(exc_type, exc_value, exc_tb)
 
@@ -163,7 +164,10 @@ class CalculateTree(Interpreter):
 
     def var(self, tree):
         name = tree.children[0].value
-        return self.vars[name]
+        try:
+            return self.vars[name]
+        except KeyError:
+            raise InvalidVariable(name, self.file)
 
     def assign_var(self, tree):
         name = tree.children[0].value
