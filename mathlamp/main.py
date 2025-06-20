@@ -6,6 +6,8 @@ from typing import Optional
 
 from lark import Lark
 from lark.visitors import Interpreter
+from lark.exceptions import UnexpectedToken
+from lark.parsers.lalr_interactive_parser import InteractiveParser
 
 from rich.console import Console
 import rich
@@ -81,11 +83,29 @@ class ArgumentError(LampError):
         self.msg = f"Function {func} recived {num} args, but expected {exp} args"
         super().__init__(self.msg, file)
 
+class InvalidFunction(LampError):
+    def __init__(self, func: str, file: str):
+        """Error for a invalid function
+        (Ex: calling an undefined function)
+
+        Args:
+            func (str): The name of the function
+            file (str): The file that the error ocurred
+        """
+        self.msg = f"The function {func} is not defined"
+        super().__init__(self.msg, file)
 
 # Error hook
 def lamp_error_hook(exc_type, exc_value, exc_tb):
     if issubclass(exc_type, LampError):
         rich.print(f"[bold red]{exc_value}[/bold red]", file=sys.stderr)
+    if exc_type == UnexpectedToken:
+        parser = exc_value.interactive_parser
+        token = exc_value.token
+        line = token.line
+        column = token.column
+        print(token.type)
+        rich.print(f"[bold red]ERROR (InvalidSyntax) At line {line}, column {column}:\n Expected one of: {parser.accepts()}[/bold red]", file=sys.stderr)
     else:
         sys.__excepthook__(exc_type, exc_value, exc_tb)
 
@@ -306,6 +326,8 @@ class CalculateTree(Interpreter):
         except IndexError:
             args = []
         func = next(filter(lambda x: x["name"] == name, self.funcs), None)
+        if func is None:
+            raise InvalidFunction(name, self.file)
         if not len(args) == len(func["params"]):
             raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)
         if not len(args) == 0:
