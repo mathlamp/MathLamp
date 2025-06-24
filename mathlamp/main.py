@@ -365,6 +365,8 @@ class CalculateTree(Interpreter):
                 for name in tree.children[1].children:
                     imp_list.append(name.value)
                 with open(Path(module_name + ".lmp"), "r") as f:
+                    # TODO: Fix module imports
+                    # Supposed to be called but never is
                     import_lex = Lark(grammar, parser="lalr")
                     import_parser = CalculateTree()
                     text = f.read()
@@ -387,6 +389,8 @@ class CalculateTree(Interpreter):
                 for name in tree.children[1].children:
                     imp_list.append(name.value)
                 with open(Path(module_name + ".lmp"), "r") as f:
+                    # Called when a filtered import (has a import list)
+                    # Ex: import test.lmp (test)
                     import_lex = Lark(grammar, parser="lalr")
                     import_parser = CalculateTree()
                     text = f.read()
@@ -398,6 +402,8 @@ class CalculateTree(Interpreter):
                     self.funcs = new_funcs
             else:
                 with open(Path(module_name + ".lmp"), "r") as f:
+                    # Called when a common import (does not have a import list)
+                    # Ex: import test.lmp
                     import_lex = Lark(grammar, parser="lalr")
                     import_parser = CalculateTree()
                     text = f.read()

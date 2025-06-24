@@ -1,3 +1,4 @@
+
 ?start: statement*
 
 ?statement: sum
@@ -6,7 +7,7 @@
       | "repeat" "(" sum ")" block -> repeat_block
       | "for" "(" sum "in" sum ")" block -> for_block
       | "func" NAME "(" params? ")" block -> func_block
-      | "import" NAME import_args? -> import_stmt
+      | "import" /(.+?)(?=\.[Ll][Mm][Pp])/ import_args? -> import_stmt
 
 ?import_args: ".lmp" "(" NAME ("," NAME)* ")" -> import
             | "(" NAME ("," NAME)* ")" -> import
