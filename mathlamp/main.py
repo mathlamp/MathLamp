@@ -15,6 +15,7 @@ import rich
 console = Console()
 
 import sys
+from os import getcwd
 
 from importlib import resources as impresources
 from mathlamp import stdlamp
@@ -364,7 +365,7 @@ class CalculateTree(Interpreter):
                 imp_list = []
                 for name in tree.children[1].children:
                     imp_list.append(name.value)
-                with open(Path(module_name + ".lmp"), "r") as f:
+                with open(Path(getcwd(), module_name[1:] + ".lmp"), "r") as f:
                     # TODO: Fix module imports
                     # Supposed to be called but never is
                     import_lex = Lark(grammar, parser="lalr")
@@ -388,7 +389,7 @@ class CalculateTree(Interpreter):
                 imp_list = []
                 for name in tree.children[1].children:
                     imp_list.append(name.value)
-                with open(Path(module_name + ".lmp"), "r") as f:
+                with open(Path(getcwd(), module_name[1:] + ".lmp"), "r") as f:
                     # Called when a filtered import (has a import list)
                     # Ex: import test.lmp (test)
                     import_lex = Lark(grammar, parser="lalr")
@@ -401,7 +402,7 @@ class CalculateTree(Interpreter):
                     new_funcs = self.funcs + filter_list
                     self.funcs = new_funcs
             else:
-                with open(Path(module_name + ".lmp"), "r") as f:
+                with open(Path(getcwd(), module_name[1:] + ".lmp"), "r") as f:
                     # Called when a common import (does not have a import list)
                     # Ex: import test.lmp
                     import_lex = Lark(grammar, parser="lalr")
@@ -420,8 +421,15 @@ def main(
     repl: Annotated[
         str, typer.Option("--repl", "-r", help="Pass a MathLamp expression to the repl")
     ] = "",
+    error_hook: Annotated[
+        bool, typer.Option("--error", "-e", help="Use default Python error hook and disable MathLamp errors")
+    ] = False
 ):
-    sys.excepthook = lamp_error_hook
+    from pathlib import Path
+    if error_hook:
+        sys.excepthook = sys.__excepthook__
+    else:
+        sys.excepthook = lamp_error_hook
     calc_parser = Lark(grammar, parser="lalr")
     if repl:
         tree = calc_parser.parse(repl)
@@ -443,13 +451,17 @@ def main(
                 print(val)
     else:
         try:
-            with open(file, "r") as f:
+            print(Path(getcwd(), file))
+            with open(str(Path(getcwd(), file)), "r") as f:
                 code = f.read()
                 tree = calc_parser.parse(code)
                 CalculateTree(file).visit(tree)
 
-        except FileNotFoundError:
-            raise MissingFile(file)
+        except FileNotFoundError as e:
+            if not error_hook:
+                raise MissingFile(file)
+            else:
+                raise e
 
 
 if __name__ == "__main__":
