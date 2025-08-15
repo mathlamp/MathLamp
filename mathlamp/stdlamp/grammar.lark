@@ -1,4 +1,3 @@
-
 ?start: statement*
 
 ?statement: sum
@@ -34,6 +33,7 @@
      | "sqrt" "(" sum ")" -> sqrt
      | "pow" "(" sum "," sum ")" -> pow
      | NAME "(" args? ")" -> default_func
+     | NAME ":" NAME "(" args? ")" -> namespace_func
 
 ?args: sum ("," sum)* -> args
 

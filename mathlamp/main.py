@@ -84,6 +84,7 @@ class ArgumentError(LampError):
         self.msg = f"Function {func} recived {num} args, but expected {exp} args"
         super().__init__(self.msg, file)
 
+
 class InvalidFunction(LampError):
     def __init__(self, func: str, file: str):
         """Error for a invalid function
@@ -96,6 +97,7 @@ class InvalidFunction(LampError):
         self.msg = f"The function {func} is not defined"
         super().__init__(self.msg, file)
 
+
 # Error hook
 def lamp_error_hook(exc_type, exc_value, exc_tb):
     if issubclass(exc_type, LampError):
@@ -106,7 +108,10 @@ def lamp_error_hook(exc_type, exc_value, exc_tb):
         token = exc_value.token
         line = token.line
         column = token.column
-        rich.print(f"[bold red]ERROR (InvalidSyntax) At line {line}, column {column}:\n Expected one of: {parser.accepts()}[/bold red]", file=sys.stderr)
+        rich.print(
+            f"[bold red]ERROR (InvalidSyntax) At line {line}, column {column}:\n Expected one of: {parser.accepts()}[/bold red]",
+            file=sys.stderr,
+        )
         exit(1)
     else:
         sys.__excepthook__(exc_type, exc_value, exc_tb)
@@ -321,7 +326,7 @@ class CalculateTree(Interpreter):
         else:
             params = []
             block = tree.children[1]
-        func = {"name": name, "params": params, "block": block}
+        func = {"name": name, "params": params, "block": block, "namespace": self.file}
         self.funcs.append(func)
 
     def default_func(self, tree):
@@ -330,9 +335,42 @@ class CalculateTree(Interpreter):
             args = self.visit(tree.children[1])
         except IndexError:
             args = []
-        func = next(filter(lambda x: x["name"] == name, self.funcs), None)
+        func = next(
+            filter(
+                lambda x: x["name"] == name and x["namespace"] == self.file, self.funcs
+            ),
+            None,
+        )
         if func is None:
             raise InvalidFunction(name, self.file)
+        if not len(args) == len(func["params"]):
+            raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)
+        if not len(args) == 0:
+            for i, arg in enumerate(args):
+                self.vars[func["params"][i]] = arg
+        result = self.visit(func["block"])
+        if self.file == "REPL":
+            if type(result).__name__ == "list":
+                for i in flatten(result):
+                    print(i)
+            elif not result == None:
+                print(result)
+
+    def namespace_func(self, tree):
+        name = tree.children[1].value
+        namespace = tree.children[0].value
+        try:
+            args = self.visit(tree.children[2])
+        except IndexError:
+            args = []
+        func = next(
+            filter(
+                lambda x: x["name"] == name and x["namespace"] == namespace, self.funcs
+            ),
+            None,
+        )
+        if func is None:
+            raise InvalidFunction(namespace + "." + name, self.file)
         if not len(args) == len(func["params"]):
             raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)
         if not len(args) == 0:
@@ -393,12 +431,20 @@ class CalculateTree(Interpreter):
                     # Called when a filtered import (has a import list)
                     # Ex: import test.lmp (test)
                     import_lex = Lark(grammar, parser="lalr")
-                    import_parser = CalculateTree()
+                    import_parser = CalculateTree(module_name[1:])
                     text = f.read()
                     ast = import_lex.parse(text)
                     import_parser.visit(ast)
                     gen_funcs = import_parser.funcs
-                    filter_list = [x for x in gen_funcs if x["name"] in imp_list]
+                    filter_list = []
+                    for func in gen_funcs:
+                        if func["namespace"] == module_name[1:]:
+                            if func["name"] in imp_list:
+                                filter_list.append(func)
+                        else:
+                            filter_list.append(func)
+                    print(gen_funcs)
+                    print(filter_list)
                     new_funcs = self.funcs + filter_list
                     self.funcs = new_funcs
             else:
@@ -406,7 +452,7 @@ class CalculateTree(Interpreter):
                     # Called when a common import (does not have a import list)
                     # Ex: import test.lmp
                     import_lex = Lark(grammar, parser="lalr")
-                    import_parser = CalculateTree()
+                    import_parser = CalculateTree(module_name[1:])
                     text = f.read()
                     ast = import_lex.parse(text)
                     import_parser.visit(ast)
@@ -422,10 +468,16 @@ def main(
         str, typer.Option("--repl", "-r", help="Pass a MathLamp expression to the repl")
     ] = "",
     error_hook: Annotated[
-        bool, typer.Option("--error", "-e", help="Use default Python error hook and disable MathLamp errors")
-    ] = False
+        bool,
+        typer.Option(
+            "--error",
+            "-e",
+            help="Use default Python error hook and disable MathLamp errors",
+        ),
+    ] = False,
 ):
     from pathlib import Path
+
     if error_hook:
         sys.excepthook = sys.__excepthook__
     else:
