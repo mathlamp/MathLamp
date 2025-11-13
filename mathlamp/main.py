@@ -326,7 +326,7 @@ class CalculateTree(Interpreter):
         else:
             params = []
             block = tree.children[1]
-        func = {"name": name, "params": params, "block": block, "module": self.file, "lang": "lamp"}
+        func = {"name": name, "params": params, "block": block, "namespace": self.file, "module": self.file, "lang": "lamp"}
         self.funcs.append(func)
 
     def default_func(self, tree):
@@ -337,7 +337,12 @@ class CalculateTree(Interpreter):
             args = self.visit(tree.children[1])
         except IndexError:
             args = []
-        func = next(filter(lambda x: x["name"] == name, self.funcs), None)
+        func = next(
+            filter(
+                lambda x: x["name"] == name and x["namespace"] == self.file, self.funcs
+            ),
+            None,
+        )
         if func is None:
             raise InvalidFunction(name, self.file)
         if not len(args) == len(func["params"]):
@@ -362,6 +367,34 @@ class CalculateTree(Interpreter):
         if not len(args) == 0 and func["lang"] == "lamp":
             for i, arg in enumerate(args):
                 self.vars.pop(func["params"][i])
+
+    def namespace_func(self, tree):
+        name = tree.children[1].value
+        namespace = tree.children[0].value
+        try:
+            args = self.visit(tree.children[2])
+        except IndexError:
+            args = []
+        func = next(
+            filter(
+                lambda x: x["name"] == name and x["namespace"] == namespace, self.funcs
+            ),
+            None,
+        )
+        if func is None:
+            raise InvalidFunction(namespace + "." + name, self.file)
+        if not len(args) == len(func["params"]):
+            raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)
+        if not len(args) == 0:
+            for i, arg in enumerate(args):
+                self.vars[func["params"][i]] = arg
+        result = self.visit(func["block"])
+        if self.file == "REPL":
+            if type(result).__name__ == "list":
+                for i in flatten(result):
+                    print(i)
+            elif not result == None:
+                print(result)
 
     def import_stmt(self, tree):
         from pathlib import Path
@@ -410,12 +443,20 @@ class CalculateTree(Interpreter):
                     # Called when a filtered import (has a import list)
                     # Ex: import test.lmp (test)
                     import_lex = Lark(grammar, parser="lalr")
-                    import_parser = CalculateTree()
+                    import_parser = CalculateTree(module_name[1:])
                     text = f.read()
                     ast = import_lex.parse(text)
                     import_parser.visit(ast)
                     gen_funcs = import_parser.funcs
-                    filter_list = [x for x in gen_funcs if x["name"] in imp_list]
+                    filter_list = []
+                    for func in gen_funcs:
+                        if func["namespace"] == module_name[1:]:
+                            if func["name"] in imp_list:
+                                filter_list.append(func)
+                        else:
+                            filter_list.append(func)
+                    print(gen_funcs)
+                    print(filter_list)
                     new_funcs = self.funcs + filter_list
                     self.funcs = new_funcs
             else:
@@ -423,7 +464,7 @@ class CalculateTree(Interpreter):
                     # Called when a common import (does not have a import list)
                     # Ex: import test.lmp
                     import_lex = Lark(grammar, parser="lalr")
-                    import_parser = CalculateTree()
+                    import_parser = CalculateTree(module_name[1:])
                     text = f.read()
                     ast = import_lex.parse(text)
                     import_parser.visit(ast)
