@@ -8,6 +8,7 @@
       | "for" "(" sum "in" sum ")" block -> for_block
       | "func" NAME "(" params? ")" block -> func_block
       | "import" /(.+?)(?=\.[Ll][Mm][Pp])/ import_args? -> import_stmt
+      | "@" NAME "(" args ")" -> meta_function
 
 ?import_args: ".lmp" "(" NAME ("," NAME)* ")" -> import
             | "(" NAME ("," NAME)* ")" -> import

@@ -7,7 +7,6 @@ from typing import Optional
 from lark import Lark
 from lark.visitors import Interpreter
 from lark.exceptions import UnexpectedToken
-from lark.parsers.lalr_interactive_parser import InteractiveParser
 
 from rich.console import Console
 import rich
@@ -18,6 +17,7 @@ import sys
 from os import getcwd
 
 from importlib import resources as impresources
+import importlib.util
 from mathlamp import stdlamp
 
 grammar_file = impresources.files(stdlamp) / "grammar.lark"
@@ -84,6 +84,7 @@ class ArgumentError(LampError):
         self.msg = f"Function {func} recived {num} args, but expected {exp} args"
         super().__init__(self.msg, file)
 
+
 class InvalidFunction(LampError):
     def __init__(self, func: str, file: str):
         """Error for a invalid function
@@ -96,6 +97,7 @@ class InvalidFunction(LampError):
         self.msg = f"The function {func} is not defined"
         super().__init__(self.msg, file)
 
+
 # Error hook
 def lamp_error_hook(exc_type, exc_value, exc_tb):
     if issubclass(exc_type, LampError):
@@ -106,7 +108,10 @@ def lamp_error_hook(exc_type, exc_value, exc_tb):
         token = exc_value.token
         line = token.line
         column = token.column
-        rich.print(f"[bold red]ERROR (InvalidSyntax) At line {line}, column {column}:\n Expected one of: {parser.accepts()}[/bold red]", file=sys.stderr)
+        rich.print(
+            f"[bold red]ERROR (InvalidSyntax) At line {line}, column {column}:\n Expected one of: {parser.accepts()}[/bold red]",
+            file=sys.stderr,
+        )
         exit(1)
     else:
         sys.__excepthook__(exc_type, exc_value, exc_tb)
@@ -321,10 +326,12 @@ class CalculateTree(Interpreter):
         else:
             params = []
             block = tree.children[1]
-        func = {"name": name, "params": params, "block": block}
+        func = {"name": name, "params": params, "block": block, "module": self.file, "lang": "lamp"}
         self.funcs.append(func)
 
     def default_func(self, tree):
+        from pathlib import Path
+
         name = tree.children[0].value
         try:
             args = self.visit(tree.children[1])
@@ -335,16 +342,26 @@ class CalculateTree(Interpreter):
             raise InvalidFunction(name, self.file)
         if not len(args) == len(func["params"]):
             raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)
-        if not len(args) == 0:
+        if not len(args) == 0 and func["lang"] == "lamp":
             for i, arg in enumerate(args):
                 self.vars[func["params"][i]] = arg
-        result = self.visit(func["block"])
-        if self.file == "REPL":
-            if type(result).__name__ == "list":
-                for i in flatten(result):
-                    print(i)
-            elif not result == None:
-                print(result)
+        if func["lang"] == "lamp":
+            result = self.visit(func["block"])
+        elif func["lang"] == "python":
+            spec = importlib.util.spec_from_file_location(str(Path(func["module"]).stem), func["module"])
+            extern = importlib.util.module_from_spec(spec)
+            sys.modules[str(Path(func["module"]).stem)] = extern
+            spec.loader.exec_module(extern)
+            func_python = getattr(extern.LampExtern(), func["name"])
+            result = func_python(*args)
+        if type(result).__name__ == "list":
+            for i in flatten(result):
+                return i
+        elif not result == None:
+            return result
+        if not len(args) == 0 and func["lang"] == "lamp":
+            for i, arg in enumerate(args):
+                self.vars.pop(func["params"][i])
 
     def import_stmt(self, tree):
         from pathlib import Path
@@ -410,9 +427,28 @@ class CalculateTree(Interpreter):
                     text = f.read()
                     ast = import_lex.parse(text)
                     import_parser.visit(ast)
-                    new_funcs = self.funcs + import_parser.funcs
+                    import_funcs = []
+                    for func in import_parser.funcs:
+                        func["module"] = module_name[1:]
+                        import_funcs.append(func)
+                    new_funcs = self.funcs + import_funcs
                     self.funcs = new_funcs
-
+    def meta_function(self, tree):
+        from pathlib import Path
+        from inspect import signature
+        keyword = tree.children[0].value
+        args = self.visit(tree.children[1])
+        if keyword == "extern":
+            if args[0] == "python":
+                spec = importlib.util.spec_from_file_location(str(Path(getcwd(), args[1]).stem), str(Path(getcwd(), args[1])))
+                extern = importlib.util.module_from_spec(spec)
+                sys.modules[Path(getcwd(), args[1]).stem] = extern
+                spec.loader.exec_module(extern)
+                func = getattr(extern.LampExtern(), args[2])
+                sig = signature(func)
+                params = list(sig.parameters.keys())
+                func_dict = {"name": args[2], "params": params, "block": None, "module": str(Path(getcwd(), args[1])), "lang": "python"}
+                self.funcs.append(func_dict)
 
 # Command definition
 @app.command()
@@ -422,10 +458,16 @@ def main(
         str, typer.Option("--repl", "-r", help="Pass a MathLamp expression to the repl")
     ] = "",
     error_hook: Annotated[
-        bool, typer.Option("--error", "-e", help="Use default Python error hook and disable MathLamp errors")
+        bool,
+        typer.Option(
+            "--error",
+            "-e",
+            help="Use default Python error hook and disable MathLamp errors",
+        ),
     ] = False
 ):
     from pathlib import Path
+
     if error_hook:
         sys.excepthook = sys.__excepthook__
     else:
@@ -447,11 +489,11 @@ def main(
                 break
             tree = calc_parser.parse(s)
             val = calc.visit(tree)
+            print(calc.funcs)
             if not val == None:
                 print(val)
     else:
         try:
-            print(Path(getcwd(), file))
             with open(str(Path(getcwd(), file)), "r") as f:
                 code = f.read()
                 tree = calc_parser.parse(code)
