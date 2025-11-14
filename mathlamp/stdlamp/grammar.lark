@@ -2,10 +2,12 @@
 
 ?statement: sum
       | NAME "=" sum -> assign_var
+      | NAME "." NAME "=" sum -> assign_struct
       | "if" "(" condition ")" block -> if_block
       | "repeat" "(" sum ")" block -> repeat_block
       | "for" "(" sum "in" sum ")" block -> for_block
       | "func" NAME "(" params? ")" block -> func_block
+      | "struct" NAME "{" struct_members "}" -> struct
       | "import" /(.+?)(?=\.[Ll][Mm][Pp])/ import_args? -> import_stmt
       | "@" NAME "(" args ")" -> meta_function
 
@@ -13,6 +15,7 @@
             | "(" NAME ("," NAME)* ")" -> import
             | ".lmp" 
 
+?struct_members: NAME ("," NAME)* -> struct_members
 
 ?bool: "true" -> true
      | "false" -> false
@@ -75,6 +78,8 @@
      | NAME             -> var
      | "(" sum ")"
      | func
+     | NAME "." NAME    -> struct_val
+     | NAME ":" NAME    -> struct_ref
 
 STRING: /"([^"]*)"/
 

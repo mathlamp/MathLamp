@@ -97,6 +97,18 @@ class InvalidFunction(LampError):
         self.msg = f"The function {func} is not defined"
         super().__init__(self.msg, file)
 
+class InvalidProperty(LampError):
+    def __init__(self, prop: str, struct: str, file: str):
+        """Error for a invalid struct property
+        (Ex: reading a property that doesn't exist)
+
+        Args:
+            prop (str): The invalid property
+            struct (str): The struct
+            file (str): The file that the error ocurred
+        """
+        self.msg = f"The property {prop} does not exist on struct {struct}"
+        super().__init__(self.msg, file)
 
 # Error hook
 def lamp_error_hook(exc_type, exc_value, exc_tb):
@@ -141,6 +153,7 @@ class CalculateTree(Interpreter):
         self.file = file
         self.vars = {}
         self.funcs = []
+        self.structs = []
 
     def start(self, tree):
         self.visit_children(tree)
@@ -178,6 +191,11 @@ class CalculateTree(Interpreter):
     def assign_var(self, tree):
         name = tree.children[0].value
         val = self.visit_children(tree)[1]
+        if isinstance(val, dict) and "members" in val:
+            tempStruct = val | {"values": {}}
+            for member in val["members"]:
+                tempStruct[member] = None
+            val = tempStruct
         self.vars[name] = val
 
     def add(self, tree):
@@ -369,6 +387,8 @@ class CalculateTree(Interpreter):
                 self.vars.pop(func["params"][i])
 
     def namespace_func(self, tree):
+        from pathlib import Path
+
         name = tree.children[1].value
         namespace = tree.children[0].value
         try:
@@ -385,16 +405,26 @@ class CalculateTree(Interpreter):
             raise InvalidFunction(namespace + "." + name, self.file)
         if not len(args) == len(func["params"]):
             raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)
-        if not len(args) == 0:
+        if not len(args) == 0 and func["lang"] == "lamp":
             for i, arg in enumerate(args):
                 self.vars[func["params"][i]] = arg
-        result = self.visit(func["block"])
-        if self.file == "REPL":
-            if type(result).__name__ == "list":
-                for i in flatten(result):
-                    print(i)
-            elif not result == None:
-                print(result)
+        if func["lang"] == "lamp":
+            result = self.visit(func["block"])
+        elif func["lang"] == "python":
+            spec = importlib.util.spec_from_file_location(str(Path(func["module"]).stem), func["module"])
+            extern = importlib.util.module_from_spec(spec)
+            sys.modules[str(Path(func["module"]).stem)] = extern
+            spec.loader.exec_module(extern)
+            func_python = getattr(extern.LampExtern(), func["name"])
+            result = func_python(*args)
+        if type(result).__name__ == "list":
+            for i in flatten(result):
+                return i
+        elif not result == None:
+            return result
+        if not len(args) == 0 and func["lang"] == "lamp":
+            for i, arg in enumerate(args):
+                self.vars.pop(func["params"][i])
 
     def import_stmt(self, tree):
         from pathlib import Path
@@ -474,6 +504,7 @@ class CalculateTree(Interpreter):
                         import_funcs.append(func)
                     new_funcs = self.funcs + import_funcs
                     self.funcs = new_funcs
+                    
     def meta_function(self, tree):
         from pathlib import Path
         from inspect import signature
@@ -488,8 +519,40 @@ class CalculateTree(Interpreter):
                 func = getattr(extern.LampExtern(), args[2])
                 sig = signature(func)
                 params = list(sig.parameters.keys())
-                func_dict = {"name": args[2], "params": params, "block": None, "module": str(Path(getcwd(), args[1])), "lang": "python"}
+                func_dict = {"name": args[2], "params": params, "block": None, "namespace": self.file, "module": str(Path(getcwd(), args[1])), "lang": "python"}
                 self.funcs.append(func_dict)
+
+    def struct(self, tree):
+        name = tree.children[0].value
+        members = []
+        for member in tree.children[1].children:
+            members.append(member.value)
+        self.structs.append({"name": name, "members": members, "namespace": self.file}) 
+
+    def struct_ref(self, tree):
+        namespace = tree.children[0].value
+        name = tree.children[1].value
+        for struct in self.structs:
+            if struct["namespace"] == namespace and struct["name"] == name:
+                return struct
+    
+    def struct_val(self, tree):
+        var = tree.children[0].value
+        value = tree.children[1].value
+        try:
+            return self.vars[var]["values"][value]
+        except KeyError:
+            raise InvalidProperty(value, f"{self.vars[var]["namespace"]}:{self.vars[var]["name"]}", self.file)
+    
+    def assign_struct(self, tree):
+        var = tree.children[0].value
+        val = tree.children[1].value
+        output = self.visit(tree.children[2])
+        struct = self.vars[var]
+        if val not in struct["members"]:
+            raise InvalidProperty(val, f"{struct["namespace"]}:{struct["name"]}", self.file)
+        struct["values"][val] = output
+        self.vars[var] = struct
 
 # Command definition
 @app.command()
@@ -538,7 +601,7 @@ def main(
             with open(str(Path(getcwd(), file)), "r") as f:
                 code = f.read()
                 tree = calc_parser.parse(code)
-                CalculateTree(file).visit(tree)
+                CalculateTree(Path(file).stem).visit(tree)
 
         except FileNotFoundError as e:
             if not error_hook:
