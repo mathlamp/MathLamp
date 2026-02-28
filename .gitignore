@@ -52,7 +52,6 @@ coverage.xml
 test-temp/
 .pytest_cache/
 cover/
-test.lmp
 
 # Translations
 *.mo
@@ -156,3 +155,7 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# MathLamp test files
+*.lmp
+candlepkgs/

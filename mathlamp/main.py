@@ -109,6 +109,18 @@ class InvalidProperty(LampError):
         """
         self.msg = f"The property {prop} does not exist on struct {struct}"
         super().__init__(self.msg, file)
+        
+class InvalidPackageProvider(LampError):
+    def __init__(self, provid: str, file: str):
+        """Error for an invalid package provider
+        (Ex: `import baz:example`)
+
+        Args:
+            provid (str): The invalid package provider
+            file (str): The file that the error ocurred
+        """
+        self.msg = f"The package provider {provid} does not exist"
+        super().__init__(self.msg, file)
 
 # Error hook
 def lamp_error_hook(exc_type, exc_value, exc_tb):
@@ -469,7 +481,8 @@ class CalculateTree(Interpreter):
                 imp_list = []
                 for name in tree.children[1].children:
                     imp_list.append(name.value)
-                with open(Path(getcwd(), module_name[1:] + ".lmp"), "r") as f:
+                module_file = Path(getcwd(), module_name[1:] + ".lmp")
+                with module_file.open("r") as f:
                     # Called when a filtered import (has a import list)
                     # Ex: import test.lmp (test)
                     import_lex = Lark(grammar, parser="lalr")
@@ -490,17 +503,33 @@ class CalculateTree(Interpreter):
                     new_funcs = self.funcs + filter_list
                     self.funcs = new_funcs
             else:
-                with open(Path(getcwd(), module_name[1:] + ".lmp"), "r") as f:
+                is_pkg = False
+                if module_name[1:].count(":") == 1:
+                    module_id = module_name[1:].split(":")
+                    if module_id[0] == "pkg": 
+                        is_pkg = True
+                        module_file = Path(getcwd(), "candlepkgs", module_name[1:].split(":")[1] + ".lmp")
+                    else:
+                        raise InvalidPackageProvider(module_id[0], self.file)
+                elif module_name[1:].count(":") == 0:
+                    module_file = Path(getcwd(), module_name[1:] + ".lmp")         
+                with module_file.open("r") as f:
                     # Called when a common import (does not have a import list)
                     # Ex: import test.lmp
                     import_lex = Lark(grammar, parser="lalr")
-                    import_parser = CalculateTree(module_name[1:])
+                    if is_pkg:
+                        import_parser = CalculateTree(module_name[1:].split(":")[1])
+                    else:
+                        import_parser = CalculateTree(module_name[1:])
                     text = f.read()
                     ast = import_lex.parse(text)
                     import_parser.visit(ast)
                     import_funcs = []
                     for func in import_parser.funcs:
-                        func["module"] = module_name[1:]
+                        if is_pkg:
+                            func["module"] = module_name[1:].split(":")[1]
+                        else:
+                            func["module"] = module_name[1:]
                         import_funcs.append(func)
                     new_funcs = self.funcs + import_funcs
                     self.funcs = new_funcs
