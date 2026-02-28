@@ -171,19 +171,28 @@ class CalculateTree(Interpreter):
 		self.visit_children(tree)
 
 	def out(self, tree):
-		"""out() function"""
+		"""out() function
+		
+		Ex. `out("Hello World!")`
+		"""
 		if self.file == "REPL":
 			return self.visit_children(tree)[0]
 		else:
 			print(self.visit_children(tree)[0])
 
 	def pow(self, tree):
-		"""pow() function"""
+		"""pow() function
+		
+		Ex. `pow(2,2) // 4`
+		"""
 		data = self.visit_children(tree)
 		return data[0] ** data[1]
 
 	def sqrt(self, tree):
-		"""sqrt() function"""
+		"""sqrt() function
+		
+		Ex. `sqrt(25) // 5`
+		"""
 		from math import sqrt
 
 		data = self.visit_children(tree)
@@ -194,6 +203,11 @@ class CalculateTree(Interpreter):
 			return val
 
 	def var(self, tree):
+		"""Variable reference
+		
+		Ex. `foo = 1
+		out(foo) // 1`
+		"""
 		name = tree.children[0].value
 		try:
 			return self.vars[name]
@@ -201,6 +215,10 @@ class CalculateTree(Interpreter):
 			raise InvalidVariable(name, self.file)
 
 	def assign_var(self, tree):
+		"""Variable assignment
+		
+		Ex. `bar = 123`
+		"""
 		name = tree.children[0].value
 		val = self.visit_children(tree)[1]
 		if isinstance(val, dict) and "members" in val:
@@ -211,18 +229,34 @@ class CalculateTree(Interpreter):
 		self.vars[name] = val
 
 	def add(self, tree):
+		"""Addition operator
+		
+		Ex. `1 + 1`
+		"""
 		data = self.visit_children(tree)
 		return data[0] + data[1]
 
 	def sub(self, tree):
+		"""Subtraction operation
+		
+		Ex. `2 - 1`
+		"""
 		data = self.visit_children(tree)
 		return data[0] - data[1]
 
 	def mul(self, tree):
+		"""Multiplication operation
+		
+		Ex. `2 * 2`
+		"""
 		data = self.visit_children(tree)
 		return data[0] * data[1]
 
 	def div(self, tree):
+		"""Division operation
+		
+		Ex. `11 / 4`
+		"""
 		data = self.visit_children(tree)
 		val = data[0] / data[1]
 		if val.is_integer():
@@ -231,10 +265,18 @@ class CalculateTree(Interpreter):
 			return val
 
 	def mod(self, tree):
+		"""Modulus operation
+		
+		Ex. `11 % 4`
+		"""
 		data = self.visit_children(tree)
 		return data[0] % data[1]
 
 	def number(self, tree):
+		"""Number type
+		
+		Ex. `123`
+		"""
 		from re import match
 
 		val = tree.children[0].value
@@ -244,32 +286,68 @@ class CalculateTree(Interpreter):
 			return int(val)
 
 	def str(self, tree):
+		"""String type
+		
+		Ex. `"Hello World"`
+		"""
 		return tree.children[0].value[1:-1]
 
 	def empty_list(self, tree):
+		"""Empty list
+		
+		Ex. `[]`
+		"""
 		return []
 
 	def single_list(self, tree):
+		"""List with a single item
+		
+		Ex. `[123]`
+		"""
 		data = self.visit_children(tree)
 		return [data[0]]
 
 	def add_item(self, tree):
+		"""List item pair
+
+		Can be nested
+		
+		Ex. `[123, "baz"]`
+		"""
 		data = self.visit_children(tree)
 		val = [data[0], data[1]]
 		return flatten(val)
 
 	def empty_dict(self, tree):
+		"""Empty dictionary
+		
+		Ex. `{}`
+		"""
 		return {}
 
 	def dict_pair(self, tree):
+		"""Dictionary key-item pair
+		
+		Ex. `{"foo": "bar"}`
+		"""
 		data = self.visit_children(tree)
 		return (data[0], data[1])
 
 	def dict_items(self, tree):
+		"""Two dict_pair container
+		
+		Can be nested
+
+		Ex. `{"foo": "bar", "num": 123}`
+		"""
 		data = self.visit_children(tree)
 		return flatten(data)
 
 	def dict_val(self, tree):
+		"""Dictionary value
+		
+		Ex. `{"abc": "def"}`
+		"""
 		data = self.visit_children(tree)
 		if isinstance(data[0], list):
 			return dict(data[0])
@@ -277,12 +355,26 @@ class CalculateTree(Interpreter):
 			return dict(data)
 
 	def true(self, tree):
+		"""True boolean value
+		
+		Ex. `true`
+		"""
 		return True
 
 	def false(self, tree):
+		"""False boolean value
+		
+		Ex. `false`
+		"""
 		return False
 
 	def if_block(self, tree):
+		"""If block
+		
+		Ex. `if (true) {
+    			out("hello")
+			}`
+		"""
 		data = self.visit(tree.children[0])
 		if data:
 			out = self.visit(tree.children[1])
@@ -290,42 +382,72 @@ class CalculateTree(Interpreter):
 				return out
 
 	def eq(self, tree):
+		"""Equal operator
+		
+		Ex. `12 == 12`
+		"""
 		from operator import eq
 
 		data = self.visit_children(tree)
 		return eq(data[0], data[1])
 
 	def ne(self, tree):
+		"""Not equal operator
+		
+		Ex. `4 != 2`
+		"""
 		from operator import ne
 
 		data = self.visit_children(tree)
 		return ne(data[0], data[1])
 
 	def lt(self, tree):
+		"""Less than operator
+		
+		Ex. `4 < 7`
+		"""
 		from operator import lt
 
 		data = self.visit_children(tree)
 		return lt(data[0], data[1])
 
 	def le(self, tree):
+		"""Less than or equal operator
+		
+		Ex. `34 <= 50`
+		"""
 		from operator import le
 
 		data = self.visit_children(tree)
 		return le(data[0], data[1])
 
 	def gt(self, tree):
+		"""Greater than operator
+		
+		Ex. `12 > 5`
+		"""
 		from operator import gt
 
 		data = self.visit_children(tree)
 		return gt(data[0], data[1])
 
 	def ge(self, tree):
+		"""Greater than or equal operator
+		
+		Ex. `23 >= 12`
+		"""
 		from operator import ge
 
 		data = self.visit_children(tree)
 		return ge(data[0], data[1])
 
 	def repeat_block(self, tree):
+		"""Repeat a block x times
+		
+		Ex. `repeat (x) {
+				out("hello")
+			}`
+		"""
 		data = self.visit(tree.children[0])
 		for _ in range(data):
 			out = self.visit(tree.children[1])
@@ -336,6 +458,14 @@ class CalculateTree(Interpreter):
 				print(out)
 
 	def for_block(self, tree):
+		"""Iterate over a list
+		
+		Ex. `items = [1, 2, 3]
+		for (item in items) {
+			out(item)
+		}
+		`
+		"""
 		name = tree.children[0].children[0].value
 		num = self.visit(tree.children[1])
 		for i in num:
@@ -349,6 +479,12 @@ class CalculateTree(Interpreter):
 					print(out)
 
 	def func_block(self, tree):
+		"""Function definition
+		
+		func hello() {
+			"hello"
+		}
+		"""
 		name = tree.children[0].value
 		if tree.children[1].data == "params":
 			params = self.visit(tree.children[1])
@@ -360,6 +496,10 @@ class CalculateTree(Interpreter):
 		self.funcs.append(func)
 
 	def default_func(self, tree):
+		"""Function call
+		
+		Ex. `hello()`
+		"""
 		from pathlib import Path
 
 		name = tree.children[0].value
@@ -399,6 +539,10 @@ class CalculateTree(Interpreter):
 				self.vars.pop(func["params"][i])
 
 	def namespace_func(self, tree):
+		"""Namespaced function call
+		
+		Ex. `mylib:hello()`
+		"""
 		from pathlib import Path
 
 		name = tree.children[1].value
@@ -439,6 +583,10 @@ class CalculateTree(Interpreter):
 				self.vars.pop(func["params"][i])
 
 	def import_stmt(self, tree):
+		"""Import functions from source files
+		
+		import hello.lmp
+		"""
 		from pathlib import Path
 
 		module_name = tree.children[0].value
@@ -535,6 +683,11 @@ class CalculateTree(Interpreter):
 					self.funcs = new_funcs
 					
 	def meta_function(self, tree):
+		"""Meta function
+		
+		Ex. `@extern("python", hello.py)
+		hello()`
+		"""
 		from pathlib import Path
 		from inspect import signature
 		keyword = tree.children[0].value
