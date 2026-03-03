@@ -158,14 +158,20 @@ def flatten(nested_list: list) -> list:
 			result.append(item)
 	return result
 
+class DebugConfig:
+	def __init__(self, debug_var: bool = False, debug_func: bool = False, debug_struct: bool = False):
+		self.debug_var = debug_var
+		self.debug_func = debug_func
+		self.debug_struct = debug_struct
 
 class CalculateTree(Interpreter):
-	def __init__(self, file: str = "REPL"):
+	def __init__(self, debug: DebugConfig, file: str = "REPL"):
 		super().__init__()
 		self.file = file
 		self.vars = {}
 		self.funcs = []
 		self.structs = []
+		self.debug = debug
 
 	def start(self, tree):
 		self.visit_children(tree)
@@ -609,7 +615,7 @@ class CalculateTree(Interpreter):
 					# TODO: Fix module imports
 					# Supposed to be called but never is
 					import_lex = Lark(grammar, parser="lalr")
-					import_parser = CalculateTree()
+					import_parser = CalculateTree(self.debug)
 					text = f.read()
 					ast = import_lex.parse(text)
 					import_parser.visit(ast)
@@ -634,7 +640,7 @@ class CalculateTree(Interpreter):
 					# Called when a filtered import (has a import list)
 					# Ex: import test.lmp (test)
 					import_lex = Lark(grammar, parser="lalr")
-					import_parser = CalculateTree(module_name[1:])
+					import_parser = CalculateTree(self.debug, module_name[1:])
 					text = f.read()
 					ast = import_lex.parse(text)
 					import_parser.visit(ast)
@@ -666,9 +672,9 @@ class CalculateTree(Interpreter):
 					# Ex: import test.lmp
 					import_lex = Lark(grammar, parser="lalr")
 					if is_pkg:
-						import_parser = CalculateTree(module_name[1:].split(":")[1])
+						import_parser = CalculateTree(self.debug, module_name[1:].split(":")[1])
 					else:
-						import_parser = CalculateTree(module_name[1:])
+						import_parser = CalculateTree(self.debug, module_name[1:])
 					text = f.read()
 					ast = import_lex.parse(text)
 					import_parser.visit(ast)
@@ -703,6 +709,14 @@ class CalculateTree(Interpreter):
 				params = list(sig.parameters.keys())
 				func_dict = {"name": args[2], "params": params, "block": None, "namespace": self.file, "module": str(Path(getcwd(), args[1])), "lang": "python"}
 				self.funcs.append(func_dict)
+		elif keyword == "debug":
+			match args[0]:
+				case "var" if self.debug.debug_var:
+					print(self.vars)
+				case "func" if self.debug.debug_func:
+					print(self.funcs)
+				case "struct" if self.debug.debug_struct:
+					print(self.structs)
 
 	def struct(self, tree):
 		name = tree.children[0].value
@@ -750,9 +764,14 @@ def main(
 			"-e",
 			help="Use default Python error hook and disable MathLamp errors",
 		),
-	] = False
+	] = False,
+	debug_var: Annotated[bool, typer.Option("--debug-var", help='Enable @debug("var") statements')] = False,
+	debug_func: Annotated[bool, typer.Option("--debug-func", help='Enable @debug("func") statements')] = False,
+	debug_struct: Annotated[bool, typer.Option("--debug-struct", help='Enable @debug("struct") statements')] = False
 ):
 	from pathlib import Path
+
+	debug = DebugConfig(debug_var, debug_func, debug_struct)
 
 	if error_hook:
 		sys.excepthook = sys.__excepthook__
@@ -761,13 +780,13 @@ def main(
 	calc_parser = Lark(grammar, parser="lalr")
 	if repl:
 		tree = calc_parser.parse(repl)
-		print(CalculateTree().visit(tree))
+		print(CalculateTree(debug).visit(tree))
 		exit(0)
 	if file == "REPL":
 		console.print(
 			"[yellow]The MathLamp REPL[/yellow]\nVersion [bold cyan]1.2.0-dev[/bold cyan] [bold red]=DEV TESTING="
 		)
-		calc = CalculateTree()
+		calc = CalculateTree(debug)
 		while True:
 			try:
 				s = input("> ")
@@ -783,7 +802,7 @@ def main(
 			with open(str(Path(getcwd(), file)), "r") as f:
 				code = f.read()
 				tree = calc_parser.parse(code)
-				CalculateTree(Path(file).stem).visit(tree)
+				CalculateTree(debug, Path(file).stem).visit(tree)
 
 		except FileNotFoundError as e:
 			if not error_hook:
