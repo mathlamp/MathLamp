@@ -83,7 +83,8 @@
 
 STRING: /"([^"]*)"/
 
-%import common.CNAME -> NAME
+NAME: /[a-zA-Z_\u0100-\uffff][a-zA-Z_0-9\u0100-\uffff]*/
+
 %import common.NUMBER
 %import common.WS
 

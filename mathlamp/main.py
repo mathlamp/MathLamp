@@ -712,11 +712,11 @@ class CalculateTree(Interpreter):
 		elif keyword == "debug":
 			match args[0]:
 				case "var" if self.debug.debug_var:
-					print(self.vars)
+					print("debug-var>>", self.vars)
 				case "func" if self.debug.debug_func:
-					print(self.funcs)
+					print("debug-func>>", self.funcs)
 				case "struct" if self.debug.debug_struct:
-					print(self.structs)
+					print("debug-struct>>", self.structs)
 
 	def struct(self, tree):
 		name = tree.children[0].value
@@ -767,7 +767,8 @@ def main(
 	] = False,
 	debug_var: Annotated[bool, typer.Option("--debug-var", help='Enable @debug("var") statements')] = False,
 	debug_func: Annotated[bool, typer.Option("--debug-func", help='Enable @debug("func") statements')] = False,
-	debug_struct: Annotated[bool, typer.Option("--debug-struct", help='Enable @debug("struct") statements')] = False
+	debug_struct: Annotated[bool, typer.Option("--debug-struct", help='Enable @debug("struct") statements')] = False,
+	debug_source: Annotated[bool, typer.Option("--debug-source", help='Prints source code on start')] = False
 ):
 	from pathlib import Path
 
@@ -794,13 +795,14 @@ def main(
 				break
 			tree = calc_parser.parse(s)
 			val = calc.visit(tree)
-			print(calc.funcs)
 			if not val == None:
 				print(val)
 	else:
 		try:
-			with open(str(Path(getcwd(), file)), "r") as f:
+			with open(str(Path(getcwd(), file)), "r", encoding="utf-8") as f:
 				code = f.read()
+				if debug_source:
+					print("debug-source>>", code)
 				tree = calc_parser.parse(code)
 				CalculateTree(debug, Path(file).stem).visit(tree)
 
