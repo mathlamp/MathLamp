@@ -6,7 +6,6 @@ from typing import Optional
 
 from lark import Lark
 from lark.visitors import Interpreter
-from lark.exceptions import UnexpectedToken
 
 from rich.console import Console
 
@@ -23,682 +22,732 @@ from mathlamp.stdlamp.errors import *
 
 grammar_file = impresources.files(stdlamp) / "grammar.lark"
 with grammar_file.open("r") as f:
-	global grammar
-	grammar = f.read()
+    global grammar
+    grammar = f.read()
 
 app = typer.Typer(pretty_exceptions_enable=False)
 
+
 def flatten(nested_list: list) -> list:
-	"""Flattens a list
+    """Flattens a list
 
-	Args:
-		nested_list (list): The list to be flattened
+    Args:
+            nested_list (list): The list to be flattened
 
-	Returns:
-		list: The flattened list
-	"""
-	result = []
-	for item in nested_list:
-		if isinstance(item, list):
-			result.extend(flatten(item))  # Recursively flatten the sublist
-		else:
-			result.append(item)
-	return result
+    Returns:
+            list: The flattened list
+    """
+    result = []
+    for item in nested_list:
+        if isinstance(item, list):
+            result.extend(flatten(item))  # Recursively flatten the sublist
+        else:
+            result.append(item)
+    return result
+
 
 class DebugConfig:
-	def __init__(self, debug_var: bool = False, debug_func: bool = False, debug_struct: bool = False):
-		self.debug_var = debug_var
-		self.debug_func = debug_func
-		self.debug_struct = debug_struct
+    def __init__(
+        self,
+        debug_var: bool = False,
+        debug_func: bool = False,
+        debug_struct: bool = False,
+    ):
+        self.debug_var = debug_var
+        self.debug_func = debug_func
+        self.debug_struct = debug_struct
+
 
 class CalculateTree(Interpreter):
-	def __init__(self, debug: DebugConfig, file: str = "REPL"):
-		super().__init__()
-		self.file = file
-		self.vars = {}
-		self.funcs = []
-		self.structs = []
-		self.debug = debug
+    def __init__(self, debug: DebugConfig, file: str = "REPL"):
+        super().__init__()
+        self.file = file
+        self.vars = {}
+        self.funcs = []
+        self.structs = []
+        self.debug = debug
 
-	def start(self, tree):
-		self.visit_children(tree)
+    def start(self, tree):
+        self.visit_children(tree)
 
-	def out(self, tree):
-		"""out() function
-		
-		Ex. `out("Hello World!")`
-		"""
-		if self.file == "REPL":
-			return self.visit_children(tree)[0]
-		else:
-			print(self.visit_children(tree)[0])
+    def out(self, tree):
+        """out() function
 
-	def pow(self, tree):
-		"""pow() function
-		
-		Ex. `pow(2,2) // 4`
-		"""
-		data = self.visit_children(tree)
-		return data[0] ** data[1]
+        Ex. `out("Hello World!")`
+        """
+        if self.file == "REPL":
+            return self.visit_children(tree)[0]
+        else:
+            print(self.visit_children(tree)[0])
 
-	def sqrt(self, tree):
-		"""sqrt() function
-		
-		Ex. `sqrt(25) // 5`
-		"""
-		from math import sqrt
+    def pow(self, tree):
+        """pow() function
 
-		data = self.visit_children(tree)
-		val = sqrt(data[0])
-		if val.is_integer():
-			return int(val)
-		else:
-			return val
+        Ex. `pow(2,2) // 4`
+        """
+        data = self.visit_children(tree)
+        return data[0] ** data[1]
 
-	def var(self, tree):
-		"""Variable reference
-		
-		Ex. `foo = 1
-		out(foo) // 1`
-		"""
-		name = tree.children[0].value
-		try:
-			return self.vars[name]
-		except KeyError:
-			raise InvalidVariable(name, self.file)
+    def sqrt(self, tree):
+        """sqrt() function
 
-	def assign_var(self, tree):
-		"""Variable assignment
-		
-		Ex. `bar = 123`
-		"""
-		name = tree.children[0].value
-		val = self.visit_children(tree)[1]
-		if isinstance(val, dict) and "members" in val:
-			tempStruct = val | {"values": {}}
-			for member in val["members"]:
-				tempStruct[member] = None
-			val = tempStruct
-		self.vars[name] = val
+        Ex. `sqrt(25) // 5`
+        """
+        from math import sqrt
 
-	def add(self, tree):
-		"""Addition operator
-		
-		Ex. `1 + 1`
-		"""
-		data = self.visit_children(tree)
-		return data[0] + data[1]
+        data = self.visit_children(tree)
+        val = sqrt(data[0])
+        if val.is_integer():
+            return int(val)
+        else:
+            return val
 
-	def sub(self, tree):
-		"""Subtraction operation
-		
-		Ex. `2 - 1`
-		"""
-		data = self.visit_children(tree)
-		return data[0] - data[1]
+    def var(self, tree):
+        """Variable reference
 
-	def mul(self, tree):
-		"""Multiplication operation
-		
-		Ex. `2 * 2`
-		"""
-		data = self.visit_children(tree)
-		return data[0] * data[1]
+        Ex. `foo = 1
+        out(foo) // 1`
+        """
+        name = tree.children[0].value
+        try:
+            return self.vars[name]
+        except KeyError:
+            raise InvalidVariable(name, self.file)
 
-	def div(self, tree):
-		"""Division operation
-		
-		Ex. `11 / 4`
-		"""
-		data = self.visit_children(tree)
-		val = data[0] / data[1]
-		if val.is_integer():
-			return int(val)
-		else:
-			return val
+    def assign_var(self, tree):
+        """Variable assignment
 
-	def mod(self, tree):
-		"""Modulus operation
-		
-		Ex. `11 % 4`
-		"""
-		data = self.visit_children(tree)
-		return data[0] % data[1]
+        Ex. `bar = 123`
+        """
+        name = tree.children[0].value
+        val = self.visit_children(tree)[1]
+        if isinstance(val, dict) and "members" in val:
+            tempStruct = val | {"values": {}}
+            for member in val["members"]:
+                tempStruct[member] = None
+            val = tempStruct
+        self.vars[name] = val
 
-	def number(self, tree):
-		"""Number type
-		
-		Ex. `123`
-		"""
-		from re import match
+    def add(self, tree):
+        """Addition operator
 
-		val = tree.children[0].value
-		if match(r"[0-9]+\.[0-9]+", val):
-			return float(val)
-		else:
-			return int(val)
+        Ex. `1 + 1`
+        """
+        data = self.visit_children(tree)
+        return data[0] + data[1]
 
-	def str(self, tree):
-		"""String type
-		
-		Ex. `"Hello World"`
-		"""
-		return tree.children[0].value[1:-1]
+    def sub(self, tree):
+        """Subtraction operation
 
-	def empty_list(self, tree):
-		"""Empty list
-		
-		Ex. `[]`
-		"""
-		return []
+        Ex. `2 - 1`
+        """
+        data = self.visit_children(tree)
+        return data[0] - data[1]
 
-	def single_list(self, tree):
-		"""List with a single item
-		
-		Ex. `[123]`
-		"""
-		data = self.visit_children(tree)
-		return [data[0]]
+    def mul(self, tree):
+        """Multiplication operation
 
-	def add_item(self, tree):
-		"""List item pair
+        Ex. `2 * 2`
+        """
+        data = self.visit_children(tree)
+        return data[0] * data[1]
 
-		Can be nested
-		
-		Ex. `[123, "baz"]`
-		"""
-		data = self.visit_children(tree)
-		val = [data[0], data[1]]
-		return flatten(val)
+    def div(self, tree):
+        """Division operation
 
-	def empty_dict(self, tree):
-		"""Empty dictionary
-		
-		Ex. `{}`
-		"""
-		return {}
+        Ex. `11 / 4`
+        """
+        data = self.visit_children(tree)
+        val = data[0] / data[1]
+        if val.is_integer():
+            return int(val)
+        else:
+            return val
 
-	def dict_pair(self, tree):
-		"""Dictionary key-item pair
-		
-		Ex. `{"foo": "bar"}`
-		"""
-		data = self.visit_children(tree)
-		return (data[0], data[1])
+    def mod(self, tree):
+        """Modulus operation
 
-	def dict_items(self, tree):
-		"""Two dict_pair container
-		
-		Can be nested
+        Ex. `11 % 4`
+        """
+        data = self.visit_children(tree)
+        return data[0] % data[1]
 
-		Ex. `{"foo": "bar", "num": 123}`
-		"""
-		data = self.visit_children(tree)
-		return flatten(data)
+    def number(self, tree):
+        """Number type
 
-	def dict_val(self, tree):
-		"""Dictionary value
-		
-		Ex. `{"abc": "def"}`
-		"""
-		data = self.visit_children(tree)
-		if isinstance(data[0], list):
-			return dict(data[0])
-		else:
-			return dict(data)
+        Ex. `123`
+        """
+        from re import match
 
-	def true(self, tree):
-		"""True boolean value
-		
-		Ex. `true`
-		"""
-		return True
+        val = tree.children[0].value
+        if match(r"[0-9]+\.[0-9]+", val):
+            return float(val)
+        else:
+            return int(val)
 
-	def false(self, tree):
-		"""False boolean value
-		
-		Ex. `false`
-		"""
-		return False
+    def str(self, tree):
+        """String type
 
-	def if_block(self, tree):
-		"""If block
-		
-		Ex. `if (true) {
-    			out("hello")
-			}`
-		"""
-		data = self.visit(tree.children[0])
-		if data:
-			out = self.visit(tree.children[1])
-			if not out == None:
-				return out
+        Ex. `"Hello World"`
+        """
+        return tree.children[0].value[1:-1]
 
-	def eq(self, tree):
-		"""Equal operator
-		
-		Ex. `12 == 12`
-		"""
-		from operator import eq
+    def empty_list(self, tree):
+        """Empty list
 
-		data = self.visit_children(tree)
-		return eq(data[0], data[1])
+        Ex. `[]`
+        """
+        return []
 
-	def ne(self, tree):
-		"""Not equal operator
-		
-		Ex. `4 != 2`
-		"""
-		from operator import ne
+    def single_list(self, tree):
+        """List with a single item
 
-		data = self.visit_children(tree)
-		return ne(data[0], data[1])
+        Ex. `[123]`
+        """
+        data = self.visit_children(tree)
+        return [data[0]]
 
-	def lt(self, tree):
-		"""Less than operator
-		
-		Ex. `4 < 7`
-		"""
-		from operator import lt
+    def add_item(self, tree):
+        """List item pair
 
-		data = self.visit_children(tree)
-		return lt(data[0], data[1])
+        Can be nested
 
-	def le(self, tree):
-		"""Less than or equal operator
-		
-		Ex. `34 <= 50`
-		"""
-		from operator import le
+        Ex. `[123, "baz"]`
+        """
+        data = self.visit_children(tree)
+        val = [data[0], data[1]]
+        return flatten(val)
 
-		data = self.visit_children(tree)
-		return le(data[0], data[1])
+    def empty_dict(self, tree):
+        """Empty dictionary
 
-	def gt(self, tree):
-		"""Greater than operator
-		
-		Ex. `12 > 5`
-		"""
-		from operator import gt
+        Ex. `{}`
+        """
+        return {}
 
-		data = self.visit_children(tree)
-		return gt(data[0], data[1])
+    def dict_pair(self, tree):
+        """Dictionary key-item pair
 
-	def ge(self, tree):
-		"""Greater than or equal operator
-		
-		Ex. `23 >= 12`
-		"""
-		from operator import ge
+        Ex. `{"foo": "bar"}`
+        """
+        data = self.visit_children(tree)
+        return (data[0], data[1])
 
-		data = self.visit_children(tree)
-		return ge(data[0], data[1])
+    def dict_items(self, tree):
+        """Two dict_pair container
 
-	def repeat_block(self, tree):
-		"""Repeat a block x times
-		
-		Ex. `repeat (x) {
-				out("hello")
-			}`
-		"""
-		data = self.visit(tree.children[0])
-		for _ in range(data):
-			out = self.visit(tree.children[1])
-			if type(out).__name__ == "list":
-				for i in flatten(out):
-					print(i)
-			elif not out == None:
-				print(out)
+        Can be nested
 
-	def for_block(self, tree):
-		"""Iterate over a list
-		
-		Ex. `items = [1, 2, 3]
-		for (item in items) {
-			out(item)
-		}
-		`
-		"""
-		name = tree.children[0].children[0].value
-		num = self.visit(tree.children[1])
-		for i in num:
-			self.vars[name] = i
-			out = self.visit(tree.children[2])
-			if self.file == "REPL":
-				if type(out).__name__ == "list":
-					for i in flatten(out):
-						print(i)
-				elif not out == None:
-					print(out)
+        Ex. `{"foo": "bar", "num": 123}`
+        """
+        data = self.visit_children(tree)
+        return flatten(data)
 
-	def func_block(self, tree):
-		"""Function definition
-		
-		func hello() {
-			"hello"
-		}
-		"""
-		name = tree.children[0].value
-		if tree.children[1].data == "params":
-			params = self.visit(tree.children[1])
-			block = tree.children[2]
-		else:
-			params = []
-			block = tree.children[1]
-		func = {"name": name, "params": params, "block": block, "namespace": self.file, "module": self.file, "lang": "lamp"}
-		self.funcs.append(func)
+    def dict_val(self, tree):
+        """Dictionary value
 
-	def default_func(self, tree):
-		"""Function call
-		
-		Ex. `hello()`
-		"""
-		from pathlib import Path
+        Ex. `{"abc": "def"}`
+        """
+        data = self.visit_children(tree)
+        if isinstance(data[0], list):
+            return dict(data[0])
+        else:
+            return dict(data)
 
-		name = tree.children[0].value
-		try:
-			args = self.visit(tree.children[1])
-		except IndexError:
-			args = []
-		func = next(
-			filter(
-				lambda x: x["name"] == name and x["namespace"] == self.file, self.funcs
-			),
-			None,
-		)
-		if func is None:
-			raise InvalidFunction(name, self.file)
-		if not len(args) == len(func["params"]):
-			raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)
-		if not len(args) == 0 and func["lang"] == "lamp":
-			for i, arg in enumerate(args):
-				self.vars[func["params"][i]] = arg
-		if func["lang"] == "lamp":
-			result = self.visit(func["block"])
-		elif func["lang"] == "python":
-			spec = importlib.util.spec_from_file_location(str(Path(func["module"]).stem), func["module"])
-			extern = importlib.util.module_from_spec(spec)
-			sys.modules[str(Path(func["module"]).stem)] = extern
-			spec.loader.exec_module(extern)
-			func_python = getattr(extern.LampExtern(), func["name"])
-			result = func_python(*args)
-		if type(result).__name__ == "list":
-			for i in flatten(result):
-				return i
-		elif not result == None:
-			return result
-		if not len(args) == 0 and func["lang"] == "lamp":
-			for i, arg in enumerate(args):
-				self.vars.pop(func["params"][i])
+    def true(self, tree):
+        """True boolean value
 
-	def namespace_func(self, tree):
-		"""Namespaced function call
-		
-		Ex. `mylib:hello()`
-		"""
-		from pathlib import Path
+        Ex. `true`
+        """
+        return True
 
-		name = tree.children[1].value
-		namespace = tree.children[0].value
-		try:
-			args = self.visit(tree.children[2])
-		except IndexError:
-			args = []
-		func = next(
-			filter(
-				lambda x: x["name"] == name and x["namespace"] == namespace, self.funcs
-			),
-			None,
-		)
-		if func is None:
-			raise InvalidFunction(namespace + "." + name, self.file)
-		if not len(args) == len(func["params"]):
-			raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)
-		if not len(args) == 0 and func["lang"] == "lamp":
-			for i, arg in enumerate(args):
-				self.vars[func["params"][i]] = arg
-		if func["lang"] == "lamp":
-			result = self.visit(func["block"])
-		elif func["lang"] == "python":
-			spec = importlib.util.spec_from_file_location(str(Path(func["module"]).stem), func["module"])
-			extern = importlib.util.module_from_spec(spec)
-			sys.modules[str(Path(func["module"]).stem)] = extern
-			spec.loader.exec_module(extern)
-			func_python = getattr(extern.LampExtern(), func["name"])
-			result = func_python(*args)
-		if type(result).__name__ == "list":
-			for i in flatten(result):
-				return i
-		elif not result == None:
-			return result
-		if not len(args) == 0 and func["lang"] == "lamp":
-			for i, arg in enumerate(args):
-				self.vars.pop(func["params"][i])
+    def false(self, tree):
+        """False boolean value
 
-	def import_stmt(self, tree):
-		"""Import functions from source files
-		
-		import hello.lmp
-		"""
-		from pathlib import Path
+        Ex. `false`
+        """
+        return False
 
-		module_name = tree.children[0].value
-		try:
-			tree.children[1]
-			load_pkg = False
-		except IndexError:
-			load_pkg = True
-		if load_pkg:
-			try:
-				tree.children[1].children[0]
-				has_list = True
-			except IndexError:
-				has_list = False
-			if has_list:
-				imp_list = []
-				for name in tree.children[1].children:
-					imp_list.append(name.value)
-				with open(Path(getcwd(), module_name[1:] + ".lmp"), "r") as f:
-					# TODO: Fix module imports
-					# Supposed to be called but never is
-					import_lex = Lark(grammar, parser="lalr")
-					import_parser = CalculateTree(self.debug)
-					text = f.read()
-					ast = import_lex.parse(text)
-					import_parser.visit(ast)
-					gen_funcs = import_parser.funcs
-					filter_list = [
-						func for func in gen_funcs if func["name"] == imp_list["name"]
-					]
-					new_funcs = self.funcs + filter_list
-					self.funcs = new_funcs
-		else:
-			try:
-				tree.children[1].children[0]
-				has_list = True
-			except IndexError:
-				has_list = False
-			if has_list:
-				imp_list = []
-				for name in tree.children[1].children:
-					imp_list.append(name.value)
-				module_file = Path(getcwd(), module_name[1:] + ".lmp")
-				with module_file.open("r") as f:
-					# Called when a filtered import (has a import list)
-					# Ex: import test.lmp (test)
-					import_lex = Lark(grammar, parser="lalr")
-					import_parser = CalculateTree(self.debug, module_name[1:])
-					text = f.read()
-					ast = import_lex.parse(text)
-					import_parser.visit(ast)
-					gen_funcs = import_parser.funcs
-					filter_list = []
-					for func in gen_funcs:
-						if func["namespace"] == module_name[1:]:
-							if func["name"] in imp_list:
-								filter_list.append(func)
-						else:
-							filter_list.append(func)
-					print(gen_funcs)
-					print(filter_list)
-					new_funcs = self.funcs + filter_list
-					self.funcs = new_funcs
-			else:
-				is_pkg = False
-				if module_name[1:].count(":") == 1:
-					module_id = module_name[1:].split(":")
-					if module_id[0] == "pkg": 
-						is_pkg = True
-						module_file = Path(getcwd(), "candlepkgs", module_name[1:].split(":")[1] + ".lmp")
-					else:
-						raise InvalidPackageProvider(module_id[0], self.file)
-				elif module_name[1:].count(":") == 0:
-					module_file = Path(getcwd(), module_name[1:] + ".lmp")         
-				with module_file.open("r") as f:
-					# Called when a common import (does not have a import list)
-					# Ex: import test.lmp
-					import_lex = Lark(grammar, parser="lalr")
-					if is_pkg:
-						import_parser = CalculateTree(self.debug, module_name[1:].split(":")[1])
-					else:
-						import_parser = CalculateTree(self.debug, module_name[1:])
-					text = f.read()
-					ast = import_lex.parse(text)
-					import_parser.visit(ast)
-					import_funcs = []
-					for func in import_parser.funcs:
-						if is_pkg:
-							func["module"] = module_name[1:].split(":")[1]
-						else:
-							func["module"] = module_name[1:]
-						import_funcs.append(func)
-					new_funcs = self.funcs + import_funcs
-					self.funcs = new_funcs
-					
-	def meta_function(self, tree):
-		"""Meta function
-		
-		Ex. `@extern("python", hello.py)
-		hello()`
-		"""
-		from pathlib import Path
-		from inspect import signature
-		keyword = tree.children[0].value
-		args = self.visit(tree.children[1])
-		if keyword == "extern":
-			if args[0] == "python":
-				spec = importlib.util.spec_from_file_location(str(Path(getcwd(), args[1]).stem), str(Path(getcwd(), args[1])))
-				extern = importlib.util.module_from_spec(spec)
-				sys.modules[Path(getcwd(), args[1]).stem] = extern
-				spec.loader.exec_module(extern)
-				func = getattr(extern.LampExtern(), args[2])
-				sig = signature(func)
-				params = list(sig.parameters.keys())
-				func_dict = {"name": args[2], "params": params, "block": None, "namespace": self.file, "module": str(Path(getcwd(), args[1])), "lang": "python"}
-				self.funcs.append(func_dict)
-		elif keyword == "debug":
-			match args[0]:
-				case "var" if self.debug.debug_var:
-					print("debug-var>>", self.vars)
-				case "func" if self.debug.debug_func:
-					print("debug-func>>", self.funcs)
-				case "struct" if self.debug.debug_struct:
-					print("debug-struct>>", self.structs)
+    def if_block(self, tree):
+        """If block
 
-	def struct(self, tree):
-		name = tree.children[0].value
-		members = []
-		for member in tree.children[1].children:
-			members.append(member.value)
-		self.structs.append({"name": name, "members": members, "namespace": self.file}) 
+        Ex. `if (true) {
+                out("hello")
+                }`
+        """
+        data = self.visit(tree.children[0])
+        if data:
+            out = self.visit(tree.children[1])
+            if not out == None:
+                return out
 
-	def struct_ref(self, tree):
-		namespace = tree.children[0].value
-		name = tree.children[1].value
-		for struct in self.structs:
-			if struct["namespace"] == namespace and struct["name"] == name:
-				return struct
-	
-	def struct_val(self, tree):
-		var = tree.children[0].value
-		value = tree.children[1].value
-		try:
-			return self.vars[var]["values"][value]
-		except KeyError:
-			raise InvalidProperty(value, f"{self.vars[var]["namespace"]}:{self.vars[var]["name"]}", self.file)
-	
-	def assign_struct(self, tree):
-		var = tree.children[0].value
-		val = tree.children[1].value
-		output = self.visit(tree.children[2])
-		struct = self.vars[var]
-		if val not in struct["members"]:
-			raise InvalidProperty(val, f"{struct["namespace"]}:{struct["name"]}", self.file)
-		struct["values"][val] = output
-		self.vars[var] = struct
+    def eq(self, tree):
+        """Equal operator
+
+        Ex. `12 == 12`
+        """
+        from operator import eq
+
+        data = self.visit_children(tree)
+        return eq(data[0], data[1])
+
+    def ne(self, tree):
+        """Not equal operator
+
+        Ex. `4 != 2`
+        """
+        from operator import ne
+
+        data = self.visit_children(tree)
+        return ne(data[0], data[1])
+
+    def lt(self, tree):
+        """Less than operator
+
+        Ex. `4 < 7`
+        """
+        from operator import lt
+
+        data = self.visit_children(tree)
+        return lt(data[0], data[1])
+
+    def le(self, tree):
+        """Less than or equal operator
+
+        Ex. `34 <= 50`
+        """
+        from operator import le
+
+        data = self.visit_children(tree)
+        return le(data[0], data[1])
+
+    def gt(self, tree):
+        """Greater than operator
+
+        Ex. `12 > 5`
+        """
+        from operator import gt
+
+        data = self.visit_children(tree)
+        return gt(data[0], data[1])
+
+    def ge(self, tree):
+        """Greater than or equal operator
+
+        Ex. `23 >= 12`
+        """
+        from operator import ge
+
+        data = self.visit_children(tree)
+        return ge(data[0], data[1])
+
+    def repeat_block(self, tree):
+        """Repeat a block x times
+
+        Ex. `repeat (x) {
+                        out("hello")
+                }`
+        """
+        data = self.visit(tree.children[0])
+        for _ in range(data):
+            out = self.visit(tree.children[1])
+            if type(out).__name__ == "list":
+                for i in flatten(out):
+                    print(i)
+            elif not out == None:
+                print(out)
+
+    def for_block(self, tree):
+        """Iterate over a list
+
+        Ex. `items = [1, 2, 3]
+        for (item in items) {
+                out(item)
+        }
+        `
+        """
+        name = tree.children[0].children[0].value
+        num = self.visit(tree.children[1])
+        for i in num:
+            self.vars[name] = i
+            out = self.visit(tree.children[2])
+            if self.file == "REPL":
+                if type(out).__name__ == "list":
+                    for i in flatten(out):
+                        print(i)
+                elif not out == None:
+                    print(out)
+
+    def func_block(self, tree):
+        """Function definition
+
+        func hello() {
+                "hello"
+        }
+        """
+        name = tree.children[0].value
+        if tree.children[1].data == "params":
+            params = self.visit(tree.children[1])
+            block = tree.children[2]
+        else:
+            params = []
+            block = tree.children[1]
+        func = {
+            "name": name,
+            "params": params,
+            "block": block,
+            "namespace": self.file,
+            "module": self.file,
+            "lang": "lamp",
+        }
+        self.funcs.append(func)
+
+    def default_func(self, tree):
+        """Function call
+
+        Ex. `hello()`
+        """
+        from pathlib import Path
+
+        name = tree.children[0].value
+        try:
+            args = self.visit(tree.children[1])
+        except IndexError:
+            args = []
+        func = next(
+            filter(
+                lambda x: x["name"] == name and x["namespace"] == self.file, self.funcs
+            ),
+            None,
+        )
+        if func is None:
+            raise InvalidFunction(name, self.file)
+        if not len(args) == len(func["params"]):
+            raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)
+        if not len(args) == 0 and func["lang"] == "lamp":
+            for i, arg in enumerate(args):
+                self.vars[func["params"][i]] = arg
+        if func["lang"] == "lamp":
+            result = self.visit(func["block"])
+        elif func["lang"] == "python":
+            spec = importlib.util.spec_from_file_location(
+                str(Path(func["module"]).stem), func["module"]
+            )
+            extern = importlib.util.module_from_spec(spec)
+            sys.modules[str(Path(func["module"]).stem)] = extern
+            spec.loader.exec_module(extern)
+            func_python = getattr(extern.LampExtern(), func["name"])
+            result = func_python(*args)
+        if type(result).__name__ == "list":
+            for i in flatten(result):
+                return i
+        elif not result == None:
+            return result
+        if not len(args) == 0 and func["lang"] == "lamp":
+            for i, arg in enumerate(args):
+                self.vars.pop(func["params"][i])
+
+    def namespace_func(self, tree):
+        """Namespaced function call
+
+        Ex. `mylib:hello()`
+        """
+        from pathlib import Path
+
+        name = tree.children[1].value
+        namespace = tree.children[0].value
+        try:
+            args = self.visit(tree.children[2])
+        except IndexError:
+            args = []
+        func = next(
+            filter(
+                lambda x: x["name"] == name and x["namespace"] == namespace, self.funcs
+            ),
+            None,
+        )
+        if func is None:
+            raise InvalidFunction(namespace + "." + name, self.file)
+        if not len(args) == len(func["params"]):
+            raise ArgumentError(len(args), len(func["params"]), func["name"], self.file)
+        if not len(args) == 0 and func["lang"] == "lamp":
+            for i, arg in enumerate(args):
+                self.vars[func["params"][i]] = arg
+        if func["lang"] == "lamp":
+            result = self.visit(func["block"])
+        elif func["lang"] == "python":
+            spec = importlib.util.spec_from_file_location(
+                str(Path(func["module"]).stem), func["module"]
+            )
+            extern = importlib.util.module_from_spec(spec)
+            sys.modules[str(Path(func["module"]).stem)] = extern
+            spec.loader.exec_module(extern)
+            func_python = getattr(extern.LampExtern(), func["name"])
+            result = func_python(*args)
+        if type(result).__name__ == "list":
+            for i in flatten(result):
+                return i
+        elif not result == None:
+            return result
+        if not len(args) == 0 and func["lang"] == "lamp":
+            for i, arg in enumerate(args):
+                self.vars.pop(func["params"][i])
+
+    def import_stmt(self, tree):
+        """Import functions from source files
+
+        import hello.lmp
+        """
+        from pathlib import Path
+
+        module_name = tree.children[0].value
+        try:
+            tree.children[1]
+            load_pkg = False
+        except IndexError:
+            load_pkg = True
+        if load_pkg:
+            try:
+                tree.children[1].children[0]
+                has_list = True
+            except IndexError:
+                has_list = False
+            if has_list:
+                imp_list = []
+                for name in tree.children[1].children:
+                    imp_list.append(name.value)
+                with open(Path(getcwd(), module_name[1:] + ".lmp"), "r") as f:
+                    # TODO: Fix module imports
+                    # Supposed to be called but never is
+                    import_lex = Lark(grammar, parser="lalr")
+                    import_parser = CalculateTree(self.debug)
+                    text = f.read()
+                    ast = import_lex.parse(text)
+                    import_parser.visit(ast)
+                    gen_funcs = import_parser.funcs
+                    filter_list = [
+                        func for func in gen_funcs if func["name"] == imp_list["name"]
+                    ]
+                    new_funcs = self.funcs + filter_list
+                    self.funcs = new_funcs
+        else:
+            try:
+                tree.children[1].children[0]
+                has_list = True
+            except IndexError:
+                has_list = False
+            if has_list:
+                imp_list = []
+                for name in tree.children[1].children:
+                    imp_list.append(name.value)
+                module_file = Path(getcwd(), module_name[1:] + ".lmp")
+                with module_file.open("r") as f:
+                    # Called when a filtered import (has a import list)
+                    # Ex: import test.lmp (test)
+                    import_lex = Lark(grammar, parser="lalr")
+                    import_parser = CalculateTree(self.debug, module_name[1:])
+                    text = f.read()
+                    ast = import_lex.parse(text)
+                    import_parser.visit(ast)
+                    gen_funcs = import_parser.funcs
+                    filter_list = []
+                    for func in gen_funcs:
+                        if func["namespace"] == module_name[1:]:
+                            if func["name"] in imp_list:
+                                filter_list.append(func)
+                        else:
+                            filter_list.append(func)
+                    print(gen_funcs)
+                    print(filter_list)
+                    new_funcs = self.funcs + filter_list
+                    self.funcs = new_funcs
+            else:
+                is_pkg = False
+                if module_name[1:].count(":") == 1:
+                    module_id = module_name[1:].split(":")
+                    if module_id[0] == "pkg":
+                        is_pkg = True
+                        module_file = Path(
+                            getcwd(),
+                            "candlepkgs",
+                            module_name[1:].split(":")[1] + ".lmp",
+                        )
+                    else:
+                        raise InvalidPackageProvider(module_id[0], self.file)
+                elif module_name[1:].count(":") == 0:
+                    module_file = Path(getcwd(), module_name[1:] + ".lmp")
+                with module_file.open("r") as f:
+                    # Called when a common import (does not have a import list)
+                    # Ex: import test.lmp
+                    import_lex = Lark(grammar, parser="lalr")
+                    if is_pkg:
+                        import_parser = CalculateTree(
+                            self.debug, module_name[1:].split(":")[1]
+                        )
+                    else:
+                        import_parser = CalculateTree(self.debug, module_name[1:])
+                    text = f.read()
+                    ast = import_lex.parse(text)
+                    import_parser.visit(ast)
+                    import_funcs = []
+                    for func in import_parser.funcs:
+                        if is_pkg:
+                            func["module"] = module_name[1:].split(":")[1]
+                        else:
+                            func["module"] = module_name[1:]
+                        import_funcs.append(func)
+                    new_funcs = self.funcs + import_funcs
+                    self.funcs = new_funcs
+
+    def meta_function(self, tree):
+        """Meta function
+
+        Ex. `@extern("python", hello.py)
+        hello()`
+        """
+        from pathlib import Path
+        from inspect import signature
+
+        keyword = tree.children[0].value
+        args = self.visit(tree.children[1])
+        if keyword == "extern":
+            if args[0] == "python":
+                spec = importlib.util.spec_from_file_location(
+                    str(Path(getcwd(), args[1]).stem), str(Path(getcwd(), args[1]))
+                )
+                extern = importlib.util.module_from_spec(spec)
+                sys.modules[Path(getcwd(), args[1]).stem] = extern
+                spec.loader.exec_module(extern)
+                func = getattr(extern.LampExtern(), args[2])
+                sig = signature(func)
+                params = list(sig.parameters.keys())
+                func_dict = {
+                    "name": args[2],
+                    "params": params,
+                    "block": None,
+                    "namespace": self.file,
+                    "module": str(Path(getcwd(), args[1])),
+                    "lang": "python",
+                }
+                self.funcs.append(func_dict)
+        elif keyword == "debug":
+            match args[0]:
+                case "var" if self.debug.debug_var:
+                    print("debug-var>>", self.vars)
+                case "func" if self.debug.debug_func:
+                    print("debug-func>>", self.funcs)
+                case "struct" if self.debug.debug_struct:
+                    print("debug-struct>>", self.structs)
+
+    def struct(self, tree):
+        name = tree.children[0].value
+        members = []
+        for member in tree.children[1].children:
+            members.append(member.value)
+        self.structs.append({"name": name, "members": members, "namespace": self.file})
+
+    def struct_ref(self, tree):
+        namespace = tree.children[0].value
+        name = tree.children[1].value
+        for struct in self.structs:
+            if struct["namespace"] == namespace and struct["name"] == name:
+                return struct
+
+    def struct_val(self, tree):
+        var = tree.children[0].value
+        value = tree.children[1].value
+        try:
+            return self.vars[var]["values"][value]
+        except KeyError:
+            raise InvalidProperty(
+                value,
+                f"{self.vars[var]["namespace"]}:{self.vars[var]["name"]}",
+                self.file,
+            )
+
+    def assign_struct(self, tree):
+        var = tree.children[0].value
+        val = tree.children[1].value
+        output = self.visit(tree.children[2])
+        struct = self.vars[var]
+        if val not in struct["members"]:
+            raise InvalidProperty(
+                val, f"{struct["namespace"]}:{struct["name"]}", self.file
+            )
+        struct["values"][val] = output
+        self.vars[var] = struct
+
 
 # Command definition
 @app.command()
 def main(
-	file: Annotated[Optional[str], typer.Argument()] = "REPL",
-	repl: Annotated[
-		str, typer.Option("--repl", "-r", help="Pass a MathLamp expression to the repl")
-	] = "",
-	error_hook: Annotated[
-		bool,
-		typer.Option(
-			"--error",
-			"-e",
-			help="Use default Python error hook and disable MathLamp errors",
-		),
-	] = False,
-	debug_var: Annotated[bool, typer.Option("--debug-var", help='Enable @debug("var") statements')] = False,
-	debug_func: Annotated[bool, typer.Option("--debug-func", help='Enable @debug("func") statements')] = False,
-	debug_struct: Annotated[bool, typer.Option("--debug-struct", help='Enable @debug("struct") statements')] = False,
-	debug_source: Annotated[bool, typer.Option("--debug-source", help='Prints source code on start')] = False
+    file: Annotated[Optional[str], typer.Argument()] = "REPL",
+    repl: Annotated[
+        str, typer.Option("--repl", "-r", help="Pass a MathLamp expression to the repl")
+    ] = "",
+    error_hook: Annotated[
+        bool,
+        typer.Option(
+            "--error",
+            "-e",
+            help="Use default Python error hook and disable MathLamp errors",
+        ),
+    ] = False,
+    debug_var: Annotated[
+        bool, typer.Option("--debug-var", help='Enable @debug("var") statements')
+    ] = False,
+    debug_func: Annotated[
+        bool, typer.Option("--debug-func", help='Enable @debug("func") statements')
+    ] = False,
+    debug_struct: Annotated[
+        bool, typer.Option("--debug-struct", help='Enable @debug("struct") statements')
+    ] = False,
+    debug_source: Annotated[
+        bool, typer.Option("--debug-source", help="Prints source code on start")
+    ] = False,
 ):
-	from pathlib import Path
+    from pathlib import Path
 
-	debug = DebugConfig(debug_var, debug_func, debug_struct)
+    debug = DebugConfig(debug_var, debug_func, debug_struct)
 
-	if error_hook:
-		sys.excepthook = sys.__excepthook__
-	else:
-		sys.excepthook = lamp_error_hook
-	calc_parser = Lark(grammar, parser="lalr")
-	if repl:
-		tree = calc_parser.parse(repl)
-		print(CalculateTree(debug).visit(tree))
-		exit(0)
-	if file == "REPL":
-		console.print(
-			"[yellow]The MathLamp REPL[/yellow]\nVersion [bold cyan]1.2.0-dev[/bold cyan] [bold red]=DEV TESTING="
-		)
-		calc = CalculateTree(debug)
-		while True:
-			try:
-				s = input("> ")
-			except EOFError:
-				break
-			tree = calc_parser.parse(s)
-			val = calc.visit(tree)
-			if not val == None:
-				print(val)
-	else:
-		try:
-			with open(str(Path(getcwd(), file)), "r", encoding="utf-8") as f:
-				code = f.read()
-				if debug_source:
-					print("debug-source>>", code)
-				tree = calc_parser.parse(code)
-				CalculateTree(debug, Path(file).stem).visit(tree)
+    if error_hook:
+        sys.excepthook = sys.__excepthook__
+    else:
+        sys.excepthook = lamp_error_hook
+    calc_parser = Lark(grammar, parser="lalr")
+    if repl:
+        tree = calc_parser.parse(repl)
+        print(CalculateTree(debug).visit(tree))
+        exit(0)
+    if file == "REPL":
+        console.print(
+            "[yellow]The MathLamp REPL[/yellow]\nVersion [bold cyan]1.2.0-dev[/bold cyan] [bold red]=DEV TESTING="
+        )
+        calc = CalculateTree(debug)
+        while True:
+            try:
+                s = input("> ")
+            except EOFError:
+                break
+            tree = calc_parser.parse(s)
+            val = calc.visit(tree)
+            if not val == None:
+                print(val)
+    else:
+        try:
+            with open(str(Path(getcwd(), file)), "r", encoding="utf-8") as f:
+                code = f.read()
+                if debug_source:
+                    print("debug-source>>", code)
+                tree = calc_parser.parse(code)
+                CalculateTree(debug, Path(file).stem).visit(tree)
 
-		except FileNotFoundError as e:
-			if not error_hook:
-				raise MissingFile(file)
-			else:
-				raise e
+        except FileNotFoundError as e:
+            if not error_hook:
+                raise MissingFile(file)
+            else:
+                raise e
 
 
 if __name__ == "__main__":
-	app()
+    app()

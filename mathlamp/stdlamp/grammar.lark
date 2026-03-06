@@ -1,85 +1,85 @@
 ?start: statement*
 
 ?statement: sum
-      | NAME "=" sum -> assign_var
-      | NAME "." NAME "=" sum -> assign_struct
-      | "if" "(" condition ")" block -> if_block
-      | "repeat" "(" sum ")" block -> repeat_block
-      | "for" "(" sum "in" sum ")" block -> for_block
-      | "func" NAME "(" params? ")" block -> func_block
-      | "struct" NAME "{" struct_members "}" -> struct
-      | "import" /(.+?)(?=\.[Ll][Mm][Pp])/ import_args? -> import_stmt
-      | "@" NAME "(" args ")" -> meta_function
+	  | NAME "=" sum -> assign_var
+	  | NAME "." NAME "=" sum -> assign_struct
+	  | "if" "(" condition ")" block -> if_block
+	  | "repeat" "(" sum ")" block -> repeat_block
+	  | "for" "(" sum "in" sum ")" block -> for_block
+	  | "func" NAME "(" params? ")" block -> func_block
+	  | "struct" NAME "{" struct_members "}" -> struct
+	  | "import" /(.+?)(?=\.[Ll][Mm][Pp])/ import_args? -> import_stmt
+	  | "@" NAME "(" args ")" -> meta_function
 
 ?import_args: ".lmp" "(" NAME ("," NAME)* ")" -> import
-            | "(" NAME ("," NAME)* ")" -> import
-            | ".lmp" 
+			| "(" NAME ("," NAME)* ")" -> import
+			| ".lmp" 
 
 ?struct_members: NAME ("," NAME)* -> struct_members
 
 ?bool: "true" -> true
-     | "false" -> false
+	 | "false" -> false
 
 ?condition: sum "==" sum  -> eq
-          | sum "!=" sum  -> ne
-          | sum "<" sum  -> lt
-          | sum "<=" sum  -> le
-          | sum ">" sum  -> gt
-          | sum ">=" sum  -> ge
-          | bool
+		  | sum "!=" sum  -> ne
+		  | sum "<" sum  -> lt
+		  | sum "<=" sum  -> le
+		  | sum ">" sum  -> gt
+		  | sum ">=" sum  -> ge
+		  | bool
 
 ?block: "{" code "}"
 
 ?code: sum
-     | code sum -> add_code
+	 | code sum -> add_code
 
 ?func: "out" "(" sum ")" -> out
-     | "sqrt" "(" sum ")" -> sqrt
-     | "pow" "(" sum "," sum ")" -> pow
-     | NAME "(" args? ")" -> default_func
-     | NAME ":" NAME "(" args? ")" -> namespace_func
+	 | "sqrt" "(" sum ")" -> sqrt
+	 | "pow" "(" sum "," sum ")" -> pow
+	 | NAME "(" args? ")" -> default_func
+	 | NAME ":" NAME "(" args? ")" -> namespace_func
 
 ?args: sum ("," sum)* -> args
 
 ?params: NAME ("," NAME)* -> params
 
 ?sum: product
-    | sum "+" product -> add
-    | sum "-" product -> sub
+	| sum "+" product -> add
+	| sum "-" product -> sub
 
 ?product: atom
-    | product "*" atom -> mul
-    | product "/" atom -> div
-    | product "%" atom -> mod
+	| product "*" atom -> mul
+	| product "/" atom -> div
+	| product "%" atom -> mod
 
 ?list: "[" items "]"
-     | "[" "]" -> empty_list
-     | "[" item "]" -> single_list
+	 | "[" "]" -> empty_list
+	 | "[" item "]" -> single_list
 
 ?items: item
-      | items "," item -> add_item
+	  | items "," item -> add_item
 
 ?item: atom
 
 ?dict: "{" dict_items "}"
-      | "{" "}" -> empty_dict
+	  | "{" "}" -> empty_dict
 
 ?dict_items: dict_item
-           | dict_items "," dict_item
+		   | dict_items "," dict_item
 
 ?dict_item: sum ":" sum -> dict_pair
 
 ?atom: NUMBER           -> number
-     | STRING           -> str
-     | list
-     | dict             -> dict_val
-     | bool
-     | "-" atom         -> neg
-     | NAME             -> var
-     | "(" sum ")"
-     | func
-     | NAME "." NAME    -> struct_val
-     | NAME ":" NAME    -> struct_ref
+	 | STRING           -> str
+	 | list
+	 | dict             -> dict_val
+	 | bool
+	 | "-" atom         -> neg
+	 | NAME             -> var
+	 | "(" sum ")"
+	 | func
+	 | NAME "." NAME    -> struct_val
+	 | NAME ":" NAME    -> struct_ref
 
 STRING: /"([^"]*)"/
 
