@@ -218,6 +218,16 @@ class CalculateTree(Interpreter):
         val = [data[0], data[1]]
         return flatten(val)
 
+    def list_index(self, tree):
+        data = self.visit_children(tree)
+        name = tree.children[0].value
+        try:
+            return self.vars[name][data[1]]
+        except KeyError:
+            raise InvalidVariable(name, self.file)
+        
+
+
     def empty_dict(self, tree):
         """Empty dictionary
 

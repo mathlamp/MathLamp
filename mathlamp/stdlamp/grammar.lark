@@ -30,8 +30,8 @@
 
 ?block: "{" code "}"
 
-?code: sum
-	 | code sum -> add_code
+?code:
+     | code statement -> add_code
 
 ?func: "out" "(" sum ")" -> out
 	 | "sqrt" "(" sum ")" -> sqrt
@@ -55,6 +55,7 @@
 ?list: "[" items "]"
 	 | "[" "]" -> empty_list
 	 | "[" item "]" -> single_list
+	 | NAME "[" item "]" -> list_index
 
 ?items: item
 	  | items "," item -> add_item
